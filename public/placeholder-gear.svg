@@ -1,0 +1,79 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.7" />
+    </linearGradient>
+    <filter id="shadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feFlood flood-color="#000000" flood-opacity="0.1"/>
+      <feComposite in2="offsetblur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Main background with gradient -->
+  <rect width="400" height="300" fill="url(#bg)"/>
+  
+  <!-- Subtle pattern background -->
+  <g opacity="0.05">
+    <pattern id="grid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <circle cx="20" cy="20" r="1" fill="white"/>
+    </pattern>
+    <rect width="400" height="300" fill="url(#grid)"/>
+  </g>
+  
+  <!-- Gear/knob icon in center -->
+  <g transform="translate(200, 120)" opacity="0.3">
+    <!-- Outer ring -->
+    <circle r="50" fill="none" stroke="white" stroke-width="4"/>
+    <!-- Inner circle -->
+    <circle r="20" fill="white" opacity="0.7"/>
+    <!-- Knob indicators -->
+    <path d="M0,-50 L0,-35 M50,0 L35,0 M0,50 L0,35 M-50,0 L-35,0" stroke="white" stroke-width="4" stroke-linecap="round"/>
+    <!-- Diagonal indicators -->
+    <path d="M35.35,-35.35 L24.75,-24.75 M35.35,35.35 L24.75,24.75 M-35.35,35.35 L-24.75,24.75 M-35.35,-35.35 L-24.75,-24.75" stroke="white" stroke-width="3" stroke-linecap="round"/>
+    <!-- Center dot -->
+    <circle r="5" fill="white"/>
+  </g>
+  
+  <!-- Musical note accents -->
+  <g opacity="0.2">
+    <path d="M80,80 Q85,60 85,70 L85,90 Q85,95 80,95 Q75,95 75,90 Q75,85 80,85 L80,80 L95,75 L95,80 L80,85" fill="white"/>
+    <path d="M320,80 Q325,60 325,70 L325,90 Q325,95 320,95 Q315,95 315,90 Q315,85 320,85 L320,80 L335,75 L335,80 L320,85" fill="white"/>
+  </g>
+  
+  <!-- Text background panel -->
+  <rect x="40" y="190" width="320" height="80" fill="black" fill-opacity="0.2" rx="8" filter="url(#shadow)"/>
+  
+  <!-- Icon in text area -->
+  <g transform="translate(200, 230)">
+    <circle r="25" fill="white" fill-opacity="0.1"/>
+    <path d="M-10,-10 L10,10 M-10,10 L10,-10" stroke="white" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Main text -->
+  <text x="200" y="225" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" text-anchor="middle" fill="white">
+    Audio Gear
+  </text>
+  
+  <!-- Subtitle text -->
+  <text x="200" y="245" font-family="system-ui, -apple-system, sans-serif" font-size="12" text-anchor="middle" fill="rgba(255,255,255,0.7)">
+    Image Loading...
+  </text>
+  
+  <!-- Corner accents -->
+  <g opacity="0.1">
+    <circle cx="30" cy="30" r="25" fill="white"/>
+    <circle cx="370" cy="30" r="25" fill="white"/>
+    <circle cx="30" cy="270" r="25" fill="white"/>
+    <circle cx="370" cy="270" r="25" fill="white"/>
+  </g>
+  
+  <!-- Border highlight -->
+  <rect x="2" y="2" width="396" height="296" fill="none" stroke="white" stroke-width="1" stroke-opacity="0.1" rx="4"/>
+</svg>

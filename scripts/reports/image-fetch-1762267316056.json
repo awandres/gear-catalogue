@@ -1,0 +1,58 @@
+{
+  "timestamp": "2025-11-04T14:41:56.054Z",
+  "totalGearItems": 10,
+  "processedItems": 10,
+  "newImagesAdded": 30,
+  "gearWithoutImages": [
+    {
+      "id": "comp-001",
+      "name": "1176LN Compressor/Limiter",
+      "brand": "Universal Audio"
+    },
+    {
+      "id": "guitar-001",
+      "name": "Stratocaster",
+      "brand": "Fender"
+    },
+    {
+      "id": "amp-001",
+      "name": "VH4",
+      "brand": "Diezel"
+    },
+    {
+      "id": "synth-001",
+      "name": "Voyager",
+      "brand": "Moog"
+    },
+    {
+      "id": "mic-001",
+      "name": "U47",
+      "brand": "Telefunken"
+    },
+    {
+      "id": "comp-002",
+      "name": "EL-8X Distressor",
+      "brand": "Empirical Labs"
+    },
+    {
+      "id": "echo-001",
+      "name": "Echoplex EP-4",
+      "brand": "Maestro"
+    },
+    {
+      "id": "cab-001",
+      "name": "1962 4x12 Cabinet",
+      "brand": "Marshall"
+    },
+    {
+      "id": "bass-001",
+      "name": "SVT",
+      "brand": "Ampeg"
+    },
+    {
+      "id": "preamp-001",
+      "name": "1073",
+      "brand": "NeveTEST"
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Gear {
+  id                   String      @id
+  name                 String
+  brand                String
+  category             String
+  subcategory          String
+  description          String
+  soundCharacteristics Json
+  tags                 String[]
+  status               GearStatus
+  parameters           Json?
+  specifications       Json?
+  usage                Json?
+  media                Json?
+  connections          Json?
+  notes                String?
+  dateAdded            DateTime?   @default(now())
+  lastUsed             DateTime?   @default(now())
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+  images               GearImage[]
+
+  @@index([category])
+  @@index([status])
+  @@index([tags])
+  @@index([name, brand, description])
+}
+
+model GearImage {
+  id          String   @id @default(cuid())
+  gearId      String
+  url         String
+  source      String   // 'google', 'unsplash', 'manual', etc.
+  isPrimary   Boolean  @default(false)
+  width       Int?
+  height      Int?
+  format      String?  // 'jpg', 'png', 'webp'
+  size        Int?     // file size in bytes
+  createdAt   DateTime @default(now())
+  
+  gear        Gear     @relation(fields: [gearId], references: [id], onDelete: Cascade)
+  
+  @@index([gearId])
+  @@index([isPrimary])
+}
+
+enum GearStatus {
+  available
+  in_use      @map("in-use")
+  archived
+  maintenance
+  broken
+}
