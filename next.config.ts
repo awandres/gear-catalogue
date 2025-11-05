@@ -46,7 +46,32 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'andertons-productimages.s3.amazonaws.com',
       },
-      // General image CDNs
+      {
+        protocol: 'https',
+        hostname: 'www.proaudiodesign.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.proaudiodesign.com',
+      },
+      // Additional audio equipment retailers
+      {
+        protocol: 'https',
+        hostname: 'www.vintageking.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.vintageking.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.soundonsound.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.soundonsound.com',
+      },
+      // General image CDNs and services
       {
         protocol: 'https',
         hostname: '*.cloudinary.com',
@@ -54,6 +79,14 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: '*.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.shopify.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.shopifycdn.com',
       },
     ],
   },

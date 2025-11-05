@@ -7,11 +7,12 @@ const prisma = new PrismaClient();
 // GET /api/gear/[id] - Get single gear item
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    const { id } = await context.params;
     const gear = await prisma.gear.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
     
     if (!gear) {
@@ -40,14 +41,15 @@ export async function GET(
 // PUT /api/gear/[id] - Update gear item
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    const { id } = await context.params;
     const body = await request.json();
     
     // Check if item exists
     const existing = await prisma.gear.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
     
     if (!existing) {
@@ -71,7 +73,7 @@ export async function PUT(
     
     // Update in database
     const updatedGear = await prisma.gear.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...body,
         status: body.status?.replace('-', '_'),
@@ -97,11 +99,12 @@ export async function PUT(
 // DELETE /api/gear/[id] - Delete gear item
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    const { id } = await context.params;
     const deletedGear = await prisma.gear.delete({
-      where: { id: params.id }
+      where: { id }
     });
     
     return NextResponse.json({ 

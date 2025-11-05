@@ -1,23 +1,31 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import { GearItem } from '@/lib/types';
 import { StatusBadge } from './StatusBadge';
 import { Badge } from '@/components/ui/Badge';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { useGearImage } from '@/hooks/useGearImage';
+import { ImageSelector } from './ImageSelector';
 
 interface GearDetailProps {
   gear: GearItem;
 }
 
 export function GearDetail({ gear }: GearDetailProps) {
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const { imageUrl: mainImage, isLoading } = useGearImage({
     id: gear.id,
     name: gear.name,
     brand: gear.brand,
-    existingImageUrl: gear.media?.photos?.[0]
+    existingImageUrl: currentImageUrl || gear.media?.photos?.[0]
   });
+
+  const handleImageUpdate = (newImageUrl: string) => {
+    setCurrentImageUrl(newImageUrl);
+    // Optionally refresh the gear data here
+  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -26,7 +34,12 @@ export function GearDetail({ gear }: GearDetailProps) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Image Gallery */}
           <div className="p-6">
-            <div className="aspect-w-4 aspect-h-3 mb-4">
+            <div className="aspect-w-4 aspect-h-3 mb-4 relative">
+              <ImageSelector 
+                gear={gear} 
+                currentImage={mainImage} 
+                onImageUpdate={handleImageUpdate} 
+              />
               {isLoading ? (
                 <div className="w-full h-[400px] flex items-center justify-center bg-gray-200 animate-pulse rounded-lg">
                   <svg className="w-16 h-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -44,6 +57,7 @@ export function GearDetail({ gear }: GearDetailProps) {
                     const target = e.target as HTMLImageElement;
                     target.src = '/placeholder-gear.svg';
                   }}
+                  unoptimized={mainImage.startsWith('http')}
                 />
               )}
             </div>
@@ -61,6 +75,7 @@ export function GearDetail({ gear }: GearDetailProps) {
                       const target = e.target as HTMLImageElement;
                       target.src = '/placeholder-gear.svg';
                     }}
+                    unoptimized={photo.startsWith('http')}
                   />
                 ))}
               </div>

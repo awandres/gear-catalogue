@@ -3,8 +3,100 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// Cache to avoid repeated generation
+// Cache to avoid repeated API calls
 const imageCache = new Map<string, string>();
+
+// Google Custom Search API configuration
+const GOOGLE_CSE_API_KEY = process.env.GOOGLE_CSE_API_KEY;
+const GOOGLE_CSE_ID = process.env.GOOGLE_CSE_ID;
+
+// Simple in-memory rate limiting (resets on server restart)
+const apiCallTracker = {
+  count: 0,
+  resetDate: new Date().toDateString(),
+  
+  canMakeRequest(): boolean {
+    const today = new Date().toDateString();
+    
+    // Reset counter if it's a new day
+    if (this.resetDate !== today) {
+      this.count = 0;
+      this.resetDate = today;
+    }
+    
+    // Google CSE allows 100 requests per day on free tier
+    return this.count < 100;
+  },
+  
+  incrementCount() {
+    this.count++;
+  },
+  
+  getRemainingCalls(): number {
+    const today = new Date().toDateString();
+    if (this.resetDate !== today) {
+      return 100;
+    }
+    return Math.max(0, 100 - this.count);
+  }
+};
+
+// Fetch image from Google Custom Search API
+async function fetchImageFromGoogle(searchQuery: string, startIndex: number = 1): Promise<{ url: string; thumbnail?: string } | null> {
+  if (!GOOGLE_CSE_API_KEY || !GOOGLE_CSE_ID) {
+    console.warn('Google CSE API credentials not configured');
+    return null;
+  }
+
+  // Check rate limit
+  if (!apiCallTracker.canMakeRequest()) {
+    console.warn(`Google CSE API rate limit reached. Remaining calls today: ${apiCallTracker.getRemainingCalls()}`);
+    return null;
+  }
+
+  try {
+    apiCallTracker.incrementCount();
+    const params = new URLSearchParams({
+      key: GOOGLE_CSE_API_KEY,
+      cx: GOOGLE_CSE_ID,
+      q: `${searchQuery} professional audio equipment`,
+      searchType: 'image',
+      num: '3', // Fetch 3 results to have options
+      start: startIndex.toString(),
+      imgSize: 'large',
+      safe: 'active',
+      imgType: 'photo'
+    });
+
+    const response = await fetch(
+      `https://www.googleapis.com/customsearch/v1?${params}`
+    );
+
+    if (!response.ok) {
+      console.error('Google CSE API error:', response.status, response.statusText);
+      return null;
+    }
+
+    const data = await response.json();
+    
+    if (data.items && data.items.length > 0) {
+      // Log successful API usage
+      console.log(`Google CSE API: Found ${data.items.length} images. Remaining calls today: ${apiCallTracker.getRemainingCalls()}`);
+      // Return the first image that hasn't been rejected
+      const firstItem = data.items[0];
+      return {
+        url: firstItem.link,
+        thumbnail: firstItem.image?.thumbnailLink
+      };
+    }
+
+    console.log(`Google CSE API: No images found for "${searchQuery}"`);
+    return null;
+  } catch (error) {
+    console.error('Error fetching image from Google:', error);
+    return null;
+  }
+}
 
 // Generate a deterministic color based on text
 function generateColor(text: string): string {
@@ -124,11 +216,37 @@ export async function GET(
       // Continue to placeholder generation if database fails
     }
     
-    // Generate a nice placeholder SVG locally (no external requests)
-    const imageUrl = generatePlaceholderSVG(query || 'Gear', brand || 'Studio');
-    imageCache.set(cacheKey, imageUrl);
+    // Try to fetch from Google Images
+    const searchQuery = `${brand} ${query}`.trim();
+    const googleImageResult = await fetchImageFromGoogle(searchQuery);
     
-    return NextResponse.json({ imageUrl });
+    if (googleImageResult) {
+      // Store the fetched image in database for future use
+      try {
+        await prisma.gearImage.create({
+          data: {
+            gearId: id,
+            url: googleImageResult.url,
+            source: 'google',
+            isPrimary: true
+          }
+        });
+        
+        imageCache.set(cacheKey, googleImageResult.url);
+        return NextResponse.json({ imageUrl: googleImageResult.url });
+      } catch (saveError) {
+        console.error('Error saving image to database:', saveError);
+        // Still return the image even if we couldn't save it
+        imageCache.set(cacheKey, googleImageResult.url);
+        return NextResponse.json({ imageUrl: googleImageResult.url });
+      }
+    }
+    
+    // Fall back to generated placeholder if Google search fails
+    const placeholderUrl = generatePlaceholderSVG(query || 'Gear', brand || 'Studio');
+    imageCache.set(cacheKey, placeholderUrl);
+    
+    return NextResponse.json({ imageUrl: placeholderUrl });
     
   } catch (error) {
     console.error('Error in image route:', error);

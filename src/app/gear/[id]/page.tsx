@@ -21,7 +21,8 @@ async function getGearItem(id: string): Promise<GearItem | null> {
 }
 
 export default async function GearDetailPage({ params }: { params: { id: string } }) {
-  const gear = await getGearItem(params.id);
+  const { id } = await params;
+  const gear = await getGearItem(id);
   
   if (!gear) {
     notFound();
