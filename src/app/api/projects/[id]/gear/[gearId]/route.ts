@@ -74,13 +74,7 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json({
-      ...projectGear,
-      gear: {
-        ...projectGear.gear,
-        status: projectGear.gear.status.replace("_", "-"),
-      },
-    });
+    return NextResponse.json(projectGear);
   } catch (error) {
     console.error("Error updating gear notes:", error);
     return NextResponse.json(

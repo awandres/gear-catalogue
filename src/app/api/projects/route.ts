@@ -32,8 +32,8 @@ export async function GET(request: NextRequest) {
       where.status = { in: statuses };
     }
     
-    // Build query options
-    const queryOptions: any = {
+    // Get projects with gear loadout
+    const projects = await prisma.project.findMany({
       where,
       include: {
         gearLoadout: {
@@ -45,14 +45,8 @@ export async function GET(request: NextRequest) {
       orderBy: {
         createdAt: "desc",
       },
-    };
-    
-    // Add limit if provided
-    if (limitParam) {
-      queryOptions.take = parseInt(limitParam, 10);
-    }
-    
-    const projects = await prisma.project.findMany(queryOptions);
+      take: limitParam ? parseInt(limitParam, 10) : undefined,
+    });
 
     // Format dates for frontend
     const formattedProjects = projects.map((project) => ({

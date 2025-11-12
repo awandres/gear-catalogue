@@ -22,7 +22,6 @@ async function main() {
         description: item.description,
         soundCharacteristics: JSON.parse(JSON.stringify(item.soundCharacteristics)),
         tags: item.tags,
-        status: item.status.replace('-', '_') as any, // Convert 'in-use' to 'in_use' for enum
         notes: item.notes || null,
         dateAdded: item.dateAdded ? new Date(item.dateAdded) : null,
         lastUsed: item.lastUsed ? new Date(item.lastUsed) : null,

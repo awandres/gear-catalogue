@@ -125,7 +125,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
     try {
       // Get all gear IDs in this category
-      const gearIds = groupedLoadout[category].map(item => item.gear.id);
+      const gearIds = groupedLoadout[category]
+        .filter(item => item.gear)
+        .map(item => item.gear!.id);
       
       // Remove each item
       const removePromises = gearIds.map(gearId => 
@@ -139,10 +141,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       
       // Update local state
       setProject(prev => {
-        if (!prev) return null;
+        if (!prev || !prev.gearLoadout) return prev;
         return {
           ...prev,
-          gearLoadout: prev.gearLoadout.filter(item => item.gear.category !== category)
+          gearLoadout: prev.gearLoadout.filter(item => item.gear?.category !== category)
         };
       });
       
@@ -210,6 +212,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
   // Group gear loadout by category
   const groupedLoadout = project.gearLoadout?.reduce((acc, item) => {
+    if (!item.gear) return acc;
     const category = item.gear.category;
     if (!acc[category]) {
       acc[category] = [];
@@ -342,7 +345,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   </div>
                 </div>
                 <div className="space-y-3">
-                  {groupedLoadout[category].map(({ gear, notes }) => (
+                  {groupedLoadout[category].map(({ gear, notes }) => {
+                    if (!gear) return null;
+                    return (
                     <Card 
                       key={gear.id} 
                       className="hover:shadow-lg transition-shadow relative group h-full border-l-4"
@@ -398,7 +403,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                         </div>
                       </div>
                     </Card>
-                  ))}
+                  );
+                  })}
                 </div>
               </div>
             ))}

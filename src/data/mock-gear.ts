@@ -25,7 +25,6 @@ export const mockGearData: GearItem[] = [
       format: "rackmount",
       channels: "mono"
     },
-    status: "available",
     usage: [
       {
         songTitle: "Electric Dreams",
@@ -80,7 +79,6 @@ export const mockGearData: GearItem[] = [
       neck: "maple",
       scale: "25.5 inch"
     },
-    status: "available",
     usage: [
       {
         songTitle: "Sunset Boulevard",
@@ -132,7 +130,6 @@ export const mockGearData: GearItem[] = [
       channels: 4,
       "effects-loop": true
     },
-    status: "available",
     usage: [
       {
         songTitle: "Iron Mountain",
@@ -181,7 +178,6 @@ export const mockGearData: GearItem[] = [
       oscillators: 3,
       filter: "Moog ladder filter"
     },
-    status: "available",
     usage: [
       {
         songTitle: "Cosmic Journey",
@@ -231,7 +227,6 @@ export const mockGearData: GearItem[] = [
       connector: "XLR",
       tube: "VF14M"
     },
-    status: "available",
     usage: [
       {
         songTitle: "Velvet Voice",
@@ -284,7 +279,6 @@ export const mockGearData: GearItem[] = [
       channels: "mono",
       modifications: ["British Mode"]
     },
-    status: "available",
     usage: [
       {
         songTitle: "Heavy Hitter",
@@ -335,7 +329,6 @@ export const mockGearData: GearItem[] = [
       era: "vintage",
       "tape-width": "1/4 inch"
     },
-    status: "available",
     usage: [
       {
         songTitle: "Desert Highway",
@@ -383,7 +376,6 @@ export const mockGearData: GearItem[] = [
       era: "vintage",
       transformer: "Marinair"
     },
-    status: "available",
     usage: [
       {
         songTitle: "Velvet Voice",
@@ -431,7 +423,6 @@ export const mockGearData: GearItem[] = [
       era: "vintage",
       configuration: "straight front"
     },
-    status: "available",
     usage: [
       {
         songTitle: "Electric Avenue",
@@ -483,7 +474,6 @@ export const mockGearData: GearItem[] = [
       era: "vintage",
       variant: "blueline"
     },
-    status: "available",
     usage: [
       {
         songTitle: "Low End Theory",
