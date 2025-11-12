@@ -44,7 +44,7 @@ export function AdminToggle() {
         onClick={() => setShowModal(true)}
         className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
       >
-        Admin Login
+        Admin Access
       </button>
 
       {showModal && (
