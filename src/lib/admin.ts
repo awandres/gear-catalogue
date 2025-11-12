@@ -23,3 +23,4 @@ export function requireAdmin(handler: Function) {
     return handler(request, ...args);
   };
 }
+

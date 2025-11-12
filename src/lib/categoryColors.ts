@@ -19,3 +19,4 @@ export function getCategoryColor(category: string): string {
   return CATEGORY_COLORS[category.toLowerCase()] || '#6b7280'; // Default to gray
 }
 
+
