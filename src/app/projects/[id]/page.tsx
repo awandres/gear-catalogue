@@ -350,8 +350,17 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                     return (
                     <Card 
                       key={gear.id} 
-                      className="hover:shadow-lg transition-shadow relative group h-full border-l-4"
-                      style={{ borderLeftColor: getCategoryColor(gear.category) }}
+                      className="transition-all relative group h-full border-l-4"
+                      style={{ 
+                        borderLeftColor: project.primaryColor,
+                        boxShadow: `0 1px 3px 0 ${project.primaryColor}20, 0 1px 2px -1px ${project.primaryColor}20`,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.boxShadow = `0 10px 15px -3px ${project.primaryColor}30, 0 4px 6px -4px ${project.primaryColor}30`;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.boxShadow = `0 1px 3px 0 ${project.primaryColor}20, 0 1px 2px -1px ${project.primaryColor}20`;
+                      }}
                     >
                       {/* Category Badge - Upper Right */}
                       <div 
@@ -457,10 +466,28 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {filteredGear.map(gear => {
                   const inProject = isGearInProject(gear.id);
+                  const categoryColor = getCategoryColor(gear.category);
+                  
                   return (
                     <Card 
                       key={gear.id}
-                      className={`transition-all ${inProject ? 'opacity-50' : 'hover:shadow-md'}`}
+                      className={`transition-all border-2 ${inProject ? 'opacity-50' : ''}`}
+                      style={{
+                        borderColor: inProject ? '#d1d5db' : categoryColor,
+                        boxShadow: inProject 
+                          ? 'none' 
+                          : `0 1px 3px 0 ${categoryColor}20, 0 1px 2px -1px ${categoryColor}20`,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!inProject) {
+                          e.currentTarget.style.boxShadow = `0 4px 6px -1px ${categoryColor}30, 0 2px 4px -2px ${categoryColor}30`;
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!inProject) {
+                          e.currentTarget.style.boxShadow = `0 1px 3px 0 ${categoryColor}20, 0 1px 2px -1px ${categoryColor}20`;
+                        }
+                      }}
                     >
                       <div className="p-4">
                         <h4 className="font-semibold text-sm">{gear.name}</h4>
@@ -469,11 +496,16 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                         <button
                           onClick={() => handleAddGear(gear.id)}
                           disabled={inProject}
-                          className={`mt-3 w-full py-1.5 px-3 text-xs rounded transition-colors ${
+                          className={`mt-3 w-full py-1.5 px-3 text-xs rounded transition-colors text-white ${
                             inProject
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              : 'bg-blue-600 text-white hover:bg-blue-700'
+                              ? 'bg-gray-300 cursor-not-allowed'
+                              : 'hover:brightness-110'
                           }`}
+                          style={
+                            inProject
+                              ? {}
+                              : { backgroundColor: categoryColor }
+                          }
                         >
                           {inProject ? 'Already Added' : 'Add to Project'}
                         </button>

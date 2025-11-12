@@ -274,12 +274,35 @@ export default function GearPage() {
 
   // Seed database handler
   const handleSeedDatabase = async () => {
-    if (!confirm('This will add sample gear and projects to reach 50 gear items and 3 projects. Continue?')) {
+    // Ask for image count
+    const imageCountInput = prompt(
+      'How many Google API calls to use for fetching images?\n\n' +
+      '• Enter 0 = No images (RECOMMENDED)\n' +
+      '• Enter a number = Fetch that many images\n' +
+      '• Leave blank or cancel = No images\n\n' +
+      'Note: This uses the SHARED daily quota of 100 calls.',
+      '0'
+    );
+    
+    if (imageCountInput === null) return; // User cancelled
+    
+    const imageCount = parseInt(imageCountInput) || 0;
+    
+    // Warn if using significant API calls
+    if (imageCount > 20) {
+      if (!confirm(`⚠️ WARNING: You're about to use ${imageCount} Google API calls during seeding!\n\nThis is a SHARED quota. Proceed?`)) {
+        return;
+      }
+    }
+
+    if (!confirm(`This will add sample gear and projects to reach 50 gear items and 3 projects.\n\nImages: ${imageCount === 0 ? 'None' : `${imageCount} will be fetched`}\n\nContinue?`)) {
       return;
     }
 
     try {
       setSeeding(true);
+      
+      // First, seed the database
       const response = await fetch('/api/admin/seed', {
         method: 'POST',
         headers: getAdminHeaders(adminKey),
@@ -292,6 +315,30 @@ export default function GearPage() {
 
       const result = await response.json();
       toast.success(`Database seeded! Added ${result.results.gearAdded} gear items, ${result.results.projectsAdded} projects`);
+      
+      // If user wants images, fetch them
+      if (imageCount > 0) {
+        toast.loading(`Fetching ${imageCount} images...`, { id: 'image-fetch' });
+        
+        const imageResponse = await fetch('/api/admin/process-images', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...getAdminHeaders(adminKey),
+          },
+          body: JSON.stringify({ 
+            mode: 'bulk',
+            limit: imageCount 
+          }),
+        });
+
+        if (imageResponse.ok) {
+          const imageResult = await imageResponse.json();
+          toast.success(`Images fetched! ${imageResult.succeeded} succeeded, ${imageResult.failed} failed`, { id: 'image-fetch' });
+        } else {
+          toast.error('Failed to fetch images', { id: 'image-fetch' });
+        }
+      }
       
       // Refresh the page data
       await fetchGear(1, filters, false);
@@ -404,20 +451,21 @@ export default function GearPage() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <div className="flex items-start justify-between">
-            <div>
+          {/* Mobile: Stack vertically, Desktop: Side by side */}
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div className="flex-1">
               <h1 className="text-4xl font-bold text-gray-900 mb-2">Studio Gear Catalog</h1>
               <p className="text-gray-600">
                 Browse our collection of professional recording equipment. Select the gear you want to use for your project.
               </p>
             </div>
             
-            {/* Admin Seed Button */}
+            {/* Admin Seed Button - Below header on mobile, to the right on desktop */}
             {isAdmin && (
               <button
                 onClick={handleSeedDatabase}
                 disabled={seeding}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center gap-2 disabled:bg-green-400 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2 disabled:bg-green-400 disabled:cursor-not-allowed md:flex-shrink-0 w-full md:w-auto"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -603,15 +651,30 @@ export default function GearPage() {
               <p className="text-sm text-gray-600">
                 Showing {gear?.length || 0} of {pagination.totalItems} items
               </p>
-              {transitioning && (
-                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Updating...</span>
-                </div>
-              )}
+              
+              <div className="flex items-center gap-3">
+                {transitioning && (
+                  <div className="flex items-center space-x-2 text-sm text-gray-500">
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Updating...</span>
+                  </div>
+                )}
+                
+                {isAdmin && (
+                  <button
+                    onClick={handleCreateNew}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Gear
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="relative">

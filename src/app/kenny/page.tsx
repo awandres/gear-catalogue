@@ -15,6 +15,7 @@ export default function KennyPage() {
   const [error, setError] = useState<string | null>(null);
   const [clearing, setClearing] = useState(false);
   const [imageCount, setImageCount] = useState<number>(0);
+  const [useAllAvailable, setUseAllAvailable] = useState(false);
   const [apiUsage, setApiUsage] = useState<any>(null);
   const [loadingUsage, setLoadingUsage] = useState(true);
   const [gearCount, setGearCount] = useState<number>(0);
@@ -60,17 +61,19 @@ export default function KennyPage() {
       return;
     }
 
+    // Determine how many API calls will be used
+    const willUseApiCalls = useAllAvailable ? (apiUsage?.remaining || 0) : imageCount;
+
     // Warn if using significant API calls
-    if (imageCount > 20) {
-      if (!confirm(`⚠️ WARNING: You're about to use ${imageCount} Google API calls!\n\nThis will leave only ${(apiUsage?.remaining || 0) - imageCount} calls for the rest of the day.\n\nAre you sure you want to proceed?`)) {
+    if (willUseApiCalls > 20) {
+      if (!confirm(`⚠️ WARNING: You're about to use ${willUseApiCalls} Google API calls!\n\nThis will leave only ${(apiUsage?.remaining || 0) - willUseApiCalls} calls for the rest of the day.\n\nAre you sure you want to proceed?`)) {
         return;
       }
     }
 
-    // Extra warning for very large amounts or auto mode
-    if (imageCount > 50 || (!imageCount && (apiUsage?.remaining || 0) > 50)) {
-      const willUse = imageCount || apiUsage?.remaining || 0;
-      if (!confirm(`🚨 FINAL WARNING: This will use ${willUse} API calls!\n\nThis is a SHARED quota. Other users will not be able to fetch images today.\n\nRECOMMENDATION: Set to 0 instead and manually add images.\n\nProceed anyway?`)) {
+    // Extra warning for very large amounts
+    if (willUseApiCalls > 50) {
+      if (!confirm(`🚨 FINAL WARNING: This will use ${willUseApiCalls} API calls!\n\nThis is a SHARED quota. Other users will not be able to fetch images today.\n\nRECOMMENDATION: Set to 0 instead and manually add images.\n\nProceed anyway?`)) {
         return;
       }
     }
@@ -88,7 +91,7 @@ export default function KennyPage() {
         },
         body: JSON.stringify({ 
           text: textInput,
-          imageCount: imageCount > 0 ? imageCount : undefined
+          imageCount: useAllAvailable ? undefined : (imageCount > 0 ? imageCount : undefined)
         }),
       });
 
@@ -370,24 +373,57 @@ Rhodes Mark I"
                       setImageCount(val);
                     }
                   }}
+                  disabled={useAllAvailable}
                   placeholder="0 (no images)"
-                  className="w-full px-4 py-2 border-2 border-red-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono text-lg font-bold"
+                  className="w-full px-4 py-2 border-2 border-red-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono text-lg font-bold disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
                 />
+                
+                {/* Use All Available Checkbox */}
+                <div className="mt-3 flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="useAllAvailable"
+                    checked={useAllAvailable}
+                    onChange={(e) => {
+                      setUseAllAvailable(e.target.checked);
+                      if (e.target.checked) {
+                        setImageCount(0);
+                      }
+                    }}
+                    className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                  />
+                  <label htmlFor="useAllAvailable" className="text-sm font-semibold text-gray-700 cursor-pointer select-none">
+                    Use All Available ({apiUsage?.remaining || 0} calls)
+                  </label>
+                  {useAllAvailable && (
+                    <span className="text-xs px-2 py-0.5 bg-orange-100 text-orange-800 rounded-full font-semibold">
+                      ⚠️ WILL USE ALL QUOTA
+                    </span>
+                  )}
+                </div>
+
                 <div className="mt-2 space-y-1">
                   <p className="text-xs text-gray-700 font-semibold">
                     • 0 = No images (RECOMMENDED for bulk uploads)
                   </p>
                   <p className="text-xs text-gray-700">
-                    • Blank = Auto-fetch up to {apiUsage?.remaining || 0} images (uses ALL remaining quota!)
-                  </p>
-                  <p className="text-xs text-gray-700">
                     • Specific number = Fetch exactly that many images
                   </p>
+                  <p className="text-xs text-gray-700">
+                    • Check "Use All Available" = Auto-fetch up to {apiUsage?.remaining || 0} images (uses ALL remaining quota!)
+                  </p>
                 </div>
-                {imageCount > 10 && (
+                {imageCount > 10 && !useAllAvailable && (
                   <div className="mt-2 p-2 bg-orange-100 border border-orange-400 rounded">
                     <p className="text-xs font-semibold text-orange-900">
                       ⚠️ You're about to use {imageCount} API calls! This leaves only {(apiUsage?.remaining || 0) - imageCount} for other users today.
+                    </p>
+                  </div>
+                )}
+                {useAllAvailable && (apiUsage?.remaining || 0) > 10 && (
+                  <div className="mt-2 p-2 bg-orange-100 border border-orange-400 rounded">
+                    <p className="text-xs font-semibold text-orange-900">
+                      ⚠️ You're about to use ALL {apiUsage?.remaining || 0} remaining API calls! No quota will be left for other users today.
                     </p>
                   </div>
                 )}

@@ -63,12 +63,9 @@ export async function GET(request: NextRequest) {
     // Get total count
     const totalItems = await prisma.gear.count({ where });
     
-    // Get paginated items with images
-    const items = await prisma.gear.findMany({
+    // Get ALL matching items (we'll sort and paginate manually for smart ordering)
+    const allItems = await prisma.gear.findMany({
       where,
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      orderBy: { name: 'asc' },
       include: {
         images: {
           where: { isPrimary: true },
@@ -89,8 +86,33 @@ export async function GET(request: NextRequest) {
       }
     });
     
+    // Smart sorting: Recent edits > With images > Without images
+    const now = new Date();
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    
+    const sortedItems = allItems.sort((a, b) => {
+      const aIsRecent = (a.updatedAt > twentyFourHoursAgo || (a.createdAt && a.createdAt > twentyFourHoursAgo));
+      const bIsRecent = (b.updatedAt > twentyFourHoursAgo || (b.createdAt && b.createdAt > twentyFourHoursAgo));
+      const aHasImage = (a.images?.length || 0) > 0;
+      const bHasImage = (b.images?.length || 0) > 0;
+      
+      // Priority 1: Recent items (within 24 hours)
+      if (aIsRecent && !bIsRecent) return -1;
+      if (!aIsRecent && bIsRecent) return 1;
+      
+      // Priority 2: Items with images
+      if (aHasImage && !bHasImage) return -1;
+      if (!aHasImage && bHasImage) return 1;
+      
+      // Priority 3: Alphabetical by name
+      return a.name.localeCompare(b.name);
+    });
+    
+    // Apply pagination to sorted results
+    const paginatedItems = sortedItems.slice((page - 1) * pageSize, page * pageSize);
+    
     // Format items for frontend
-    const formattedItems = items.map(item => ({
+    const formattedItems = paginatedItems.map(item => ({
       ...item,
       dateAdded: item.dateAdded?.toISOString().split('T')[0],
       lastUsed: item.lastUsed?.toISOString().split('T')[0],

@@ -119,8 +119,9 @@ export default function ProjectsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
+      {/* Mobile: Stack vertically, Desktop: Side by side */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
+        <div className="flex-1">
           <h1 className="text-3xl font-bold text-gray-900">Projects</h1>
           <p className="text-gray-600 mt-1">Manage recording sessions and gear loadouts</p>
         </div>
@@ -128,7 +129,7 @@ export default function ProjectsPage() {
         {isAdmin && (
           <button
             onClick={() => setShowCreateModal(true)}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 md:flex-shrink-0 w-full md:w-auto"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

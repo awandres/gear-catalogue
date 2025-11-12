@@ -399,6 +399,6 @@ export function AdminToolbar() {
           animation: shake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97);
         }
       `}</style>
-    </>}
+    </>
   );
 }

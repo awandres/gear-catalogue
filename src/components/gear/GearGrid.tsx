@@ -60,7 +60,8 @@ export function GearGrid({ gear, loading, onCreateNew, onEdit, onDelete, onAddTo
     );
   }
 
-  if (displayedGear.length === 0 && !loading) {
+  // Only show "no results" if not loading AND the original gear prop is empty
+  if (gear.length === 0 && !loading) {
     return (
       <div className="text-center py-12 transition-opacity duration-300">
         <p className="text-gray-500 text-lg">No gear found matching your criteria.</p>
