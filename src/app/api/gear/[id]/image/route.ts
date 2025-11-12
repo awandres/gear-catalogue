@@ -162,10 +162,10 @@ function generatePlaceholderSVG(text: string, brand: string): string {
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // In Next.js 15, params is a Promise
+    // In Next.js 15+, params is a Promise
     const { id } = await params;
     const searchParams = new URL(request.url).searchParams;
     const query = searchParams.get('q') || '';

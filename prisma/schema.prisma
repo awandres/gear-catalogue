@@ -11,7 +11,7 @@ datasource db {
 }
 
 model Gear {
-  id                   String      @id
+  id                   String    @id
   name                 String
   brand                String
   category             String
@@ -19,47 +19,101 @@ model Gear {
   description          String
   soundCharacteristics Json
   tags                 String[]
-  status               GearStatus
   parameters           Json?
   specifications       Json?
-  usage                Json?
+  usage                Json? // Will include studio projects + famous examples
   media                Json?
   connections          Json?
   notes                String?
-  dateAdded            DateTime?   @default(now())
-  lastUsed             DateTime?   @default(now())
-  createdAt            DateTime    @default(now())
-  updatedAt            DateTime    @updatedAt
-  images               GearImage[]
+  dateAdded            DateTime? @default(now())
+  lastUsed             DateTime? @default(now())
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  // Relations
+  images      GearImage[]
+  projectGear ProjectGear[]
 
   @@index([category])
-  @@index([status])
   @@index([tags])
   @@index([name, brand, description])
 }
 
 model GearImage {
-  id          String   @id @default(cuid())
-  gearId      String
-  url         String
-  source      String   // 'google', 'unsplash', 'manual', etc.
-  isPrimary   Boolean  @default(false)
-  width       Int?
-  height      Int?
-  format      String?  // 'jpg', 'png', 'webp'
-  size        Int?     // file size in bytes
-  createdAt   DateTime @default(now())
-  
-  gear        Gear     @relation(fields: [gearId], references: [id], onDelete: Cascade)
-  
+  id        String   @id @default(cuid())
+  gearId    String
+  url       String
+  source    String // 'google', 'unsplash', 'manual', etc.
+  isPrimary Boolean  @default(false)
+  width     Int?
+  height    Int?
+  format    String? // 'jpg', 'png', 'webp'
+  size      Int? // file size in bytes
+  createdAt DateTime @default(now())
+
+  gear Gear @relation(fields: [gearId], references: [id], onDelete: Cascade)
+
   @@index([gearId])
   @@index([isPrimary])
 }
 
-enum GearStatus {
-  available
-  in_use      @map("in-use")
-  archived
-  maintenance
-  broken
+// New: Projects represent recording sessions/clients
+model Project {
+  id           String        @id @default(cuid())
+  name         String // "Arctic Monkeys - New Album"
+  clientName   String // "Arctic Monkeys"
+  clientEmail  String?
+  description  String? // Project notes/description
+  startDate    DateTime?
+  endDate      DateTime?
+  status       ProjectStatus @default(PLANNING)
+  shareToken   String        @unique @default(cuid()) // For client sharing
+  primaryColor String        @default("#3b82f6") // Brand color for UI theming
+
+  // Relations
+  gearLoadout ProjectGear[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([shareToken])
+}
+
+// Junction table for gear selected for projects
+model ProjectGear {
+  id        String   @id @default(cuid())
+  projectId String
+  gearId    String
+  notes     String? // "Using for lead vocals"
+  addedAt   DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  gear    Gear    @relation(fields: [gearId], references: [id])
+
+  @@unique([projectId, gearId])
+  @@index([projectId])
+  @@index([gearId])
+}
+
+// Enhanced usage examples in the main Gear model
+// We'll update the 'usage' JSON field to include famous examples
+
+enum ProjectStatus {
+  PLANNING // Setting up gear loadout
+  CONFIRMED // Ready to go
+  IN_SESSION // Currently recording
+  COMPLETED // Finished
+  ARCHIVED // Old project
+}
+
+// Track Google API usage
+model ApiUsage {
+  id               String   @id @default(cuid())
+  date             DateTime @unique @default(now()) @db.Date
+  imageSearchCalls Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([date])
 }

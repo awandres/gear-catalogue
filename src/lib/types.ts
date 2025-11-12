@@ -1,7 +1,5 @@
 // Type definitions based on the gear catalog schema
 
-export type GearStatus = 'available' | 'in-use' | 'archived' | 'maintenance' | 'broken';
-
 export type ParameterType = 'knob' | 'switch' | 'slider' | 'button' | 'wheel' | 'jack';
 
 export interface GearParameter {
@@ -43,7 +41,6 @@ export interface GearItem {
   description: string;
   soundCharacteristics: SoundCharacteristics;
   tags: string[];
-  status: GearStatus;
   
   // Recommended Fields (Optional)
   parameters?: GearParameter[];
@@ -54,6 +51,19 @@ export interface GearItem {
   notes?: string;
   dateAdded?: string;
   lastUsed?: string;
+  
+  // Relations
+  projectGear?: Array<{
+    id: string;
+    projectId: string;
+    gearId: string;
+    project: {
+      id: string;
+      name: string;
+      primaryColor: string;
+      status: string;
+    };
+  }>;
 }
 
 // Categories and subcategories
@@ -69,8 +79,38 @@ export const GEAR_CATEGORIES = {
   microphone: ['large-diaphragm-condenser', 'small-diaphragm-condenser', 'dynamic', 'ribbon'],
   preamp: ['microphone-preamp', 'di-preamp', 'channel-strip'],
   monitoring: ['studio-monitor', 'headphones'],
-  drum: ['drum-kit', 'percussion']
+  drum: ['drum-kit', 'percussion'],
+  'needs-review': ['uncategorized']
 } as const;
+
+// Project related types
+export type ProjectStatus = 'PLANNING' | 'CONFIRMED' | 'IN_SESSION' | 'COMPLETED' | 'ARCHIVED';
+
+export interface Project {
+  id: string;
+  name: string;
+  clientName: string;
+  clientEmail?: string | null;
+  description?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  status: ProjectStatus;
+  shareToken: string;
+  primaryColor: string; // Hex color for branding
+  createdAt: string;
+  updatedAt: string;
+  gearLoadout?: ProjectGear[];
+}
+
+export interface ProjectGear {
+  id: string;
+  projectId: string;
+  gearId: string;
+  notes?: string | null;
+  addedAt: string;
+  gear?: GearItem;
+  project?: Project;
+}
 
 export type GearCategory = keyof typeof GEAR_CATEGORIES;
 export type GearSubcategory = typeof GEAR_CATEGORIES[GearCategory][number];
@@ -78,10 +118,10 @@ export type GearSubcategory = typeof GEAR_CATEGORIES[GearCategory][number];
 // Filter types
 export interface GearFilters {
   category?: GearCategory;
-  status?: GearStatus[];
   tags?: string[];
   tone?: string[];
   search?: string;
+  projectId?: string;
 }
 
 // API response types

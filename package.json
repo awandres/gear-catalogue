@@ -17,9 +17,12 @@
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
+    "@vercel/blob": "^2.0.0",
+    "browser-image-compression": "^2.0.2",
     "next": "16.0.1",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "react-hot-toast": "^2.6.0"
   },
   "devDependencies": {
     "@prisma/client": "^6.18.0",

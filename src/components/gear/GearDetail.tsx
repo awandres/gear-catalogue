@@ -1,20 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { GearItem } from '@/lib/types';
-import { StatusBadge } from './StatusBadge';
+import { GearItem, Project } from '@/lib/types';
 import { Badge } from '@/components/ui/Badge';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { useGearImage } from '@/hooks/useGearImage';
 import { ImageSelector } from './ImageSelector';
+import { useAdmin, getAdminHeaders } from '@/contexts/AdminContext';
+import toast from 'react-hot-toast';
 
 interface GearDetailProps {
   gear: GearItem;
 }
 
 export function GearDetail({ gear }: GearDetailProps) {
+  const { isAdmin, adminKey } = useAdmin();
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
+  const [gearProjects, setGearProjects] = useState(gear.projectGear || []);
+  
   const { imageUrl: mainImage, isLoading } = useGearImage({
     id: gear.id,
     name: gear.name,
@@ -22,9 +27,80 @@ export function GearDetail({ gear }: GearDetailProps) {
     existingImageUrl: currentImageUrl || gear.media?.photos?.[0]
   });
 
+  useEffect(() => {
+    if (isAdmin) {
+      fetchProjects();
+    }
+  }, [isAdmin]);
+
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch('/api/projects?limit=10&status=PLANNING,CONFIRMED,IN_SESSION');
+      const data = await response.json();
+      setAvailableProjects(data.items || []);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    }
+  };
+
   const handleImageUpdate = (newImageUrl: string) => {
     setCurrentImageUrl(newImageUrl);
-    // Optionally refresh the gear data here
+  };
+
+  const isInProject = (projectId: string) => {
+    return gearProjects.some(pg => pg.project.id === projectId);
+  };
+
+  const handleToggleProject = async (project: Project) => {
+    const inProject = isInProject(project.id);
+    const toastId = toast.loading(inProject ? 'Removing from project...' : 'Adding to project...');
+
+    try {
+      if (inProject) {
+        // Remove from project
+        const response = await fetch(`/api/projects/${project.id}/gear/${gear.id}`, {
+          method: 'DELETE',
+          headers: getAdminHeaders(adminKey),
+        });
+
+        if (!response.ok) throw new Error('Failed to remove from project');
+
+        toast.success(`Removed from ${project.name}`, { id: toastId });
+        // Update local state
+        setGearProjects(prev => prev.filter(pg => pg.project.id !== project.id));
+      } else {
+        // Add to project
+        const response = await fetch(`/api/projects/${project.id}/gear`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...getAdminHeaders(adminKey),
+          },
+          body: JSON.stringify({ gearId: gear.id }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to add to project');
+        }
+
+        toast.success(`Added to ${project.name}`, { id: toastId });
+        // Update local state
+        setGearProjects(prev => [...prev, {
+          id: '',
+          projectId: project.id,
+          gearId: gear.id,
+          project: {
+            id: project.id,
+            name: project.name,
+            primaryColor: project.primaryColor,
+            status: project.status,
+          }
+        } as any]);
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update project', { id: toastId });
+    }
   };
 
   return (
@@ -52,7 +128,7 @@ export function GearDetail({ gear }: GearDetailProps) {
                   alt={gear.name}
                   width={600}
                   height={450}
-                  className="object-cover rounded-lg w-full h-[400px]"
+                  className="object-contain rounded-lg w-full h-[400px] bg-white"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = '/placeholder-gear.svg';
@@ -85,12 +161,9 @@ export function GearDetail({ gear }: GearDetailProps) {
           {/* Basic Info */}
           <div className="p-6 space-y-6">
             <div>
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900">{gear.name}</h1>
-                  <p className="text-xl text-gray-600">{gear.brand}</p>
-                </div>
-                <StatusBadge status={gear.status} className="text-sm" />
+              <div className="mb-4">
+                <h1 className="text-3xl font-bold text-gray-900">{gear.name}</h1>
+                <p className="text-xl text-gray-600">{gear.brand}</p>
               </div>
               
               <p className="text-gray-700">{gear.description}</p>
@@ -130,6 +203,67 @@ export function GearDetail({ gear }: GearDetailProps) {
                 ))}
               </div>
             </div>
+
+            {/* Projects Management */}
+            {isAdmin && availableProjects.length > 0 && (
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Projects</h3>
+                <div className="flex flex-wrap gap-2">
+                  {availableProjects.map((project) => {
+                    const inProject = isInProject(project.id);
+                    return (
+                      <button
+                        key={project.id}
+                        onClick={() => handleToggleProject(project)}
+                        className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-full border-2 font-medium transition-all hover:shadow-md"
+                        style={{ 
+                          backgroundColor: inProject ? project.primaryColor : 'white',
+                          color: inProject ? 'white' : project.primaryColor,
+                          borderColor: project.primaryColor
+                        }}
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          {inProject ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                          ) : (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          )}
+                        </svg>
+                        {project.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Associated Projects (Non-Admin View) */}
+            {!isAdmin && gearProjects.length > 0 && (
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Used in Projects</h3>
+                <div className="flex flex-wrap gap-2">
+                  {gearProjects.map(({ project }) => (
+                    <Badge 
+                      key={project.id} 
+                      className="text-sm px-3 py-1.5 border-2 font-medium"
+                      style={{ 
+                        backgroundColor: `${project.primaryColor}20`,
+                        color: project.primaryColor,
+                        borderColor: project.primaryColor
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-2.5 h-2.5 rounded-full"
+                          style={{ backgroundColor: project.primaryColor }}
+                        />
+                        {project.name}
+                      </div>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Metadata */}
             <div className="text-sm text-gray-600 space-y-1">

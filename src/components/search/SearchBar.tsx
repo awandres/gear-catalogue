@@ -14,7 +14,7 @@ export function SearchBar({
   debounceMs = 300 
 }: SearchBarProps) {
   const [query, setQuery] = useState('');
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const debouncedSearch = useCallback((value: string) => {
     if (timeoutRef.current) {

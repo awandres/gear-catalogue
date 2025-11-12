@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { canMakeApiCalls, incrementApiUsage } from '@/app/api/admin/api-usage/route';
 
 const prisma = new PrismaClient();
 
@@ -7,36 +8,9 @@ const prisma = new PrismaClient();
 const GOOGLE_CSE_API_KEY = process.env.GOOGLE_CSE_API_KEY;
 const GOOGLE_CSE_ID = process.env.GOOGLE_CSE_ID;
 
-// Rate limiting tracker (shared with main image route in production)
-const apiCallTracker = {
-  count: 0,
-  resetDate: new Date().toDateString(),
-  
-  canMakeRequest(): boolean {
-    const today = new Date().toDateString();
-    if (this.resetDate !== today) {
-      this.count = 0;
-      this.resetDate = today;
-    }
-    return this.count < 100;
-  },
-  
-  incrementCount() {
-    this.count++;
-  },
-  
-  getRemainingCalls(): number {
-    const today = new Date().toDateString();
-    if (this.resetDate !== today) {
-      return 100;
-    }
-    return Math.max(0, 100 - this.count);
-  }
-};
-
 export async function POST(
   request: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await context.params;
@@ -104,14 +78,15 @@ export async function POST(
       }, { status: 503 });
     }
 
-    if (!apiCallTracker.canMakeRequest()) {
+    // Check database-tracked API usage
+    const { allowed, available } = await canMakeApiCalls(1);
+    
+    if (!allowed || available === 0) {
       return NextResponse.json({ 
         error: 'Daily API limit reached',
         remainingCalls: 0 
       }, { status: 429 });
     }
-
-    apiCallTracker.incrementCount();
 
     const searchQuery = `${brand} ${name} professional audio equipment`;
     const params = new URLSearchParams({
@@ -135,16 +110,20 @@ export async function POST(
       return NextResponse.json({ 
         error: 'Google API error',
         details: error,
-        remainingCalls: apiCallTracker.getRemainingCalls()
+        remainingCalls: available
       }, { status: response.status });
     }
 
     const data = await response.json();
     
+    // Increment API usage counter in database
+    await incrementApiUsage(1);
+    console.log('✅ Google API call made - usage incremented');
+    
     if (!data.items || data.items.length === 0) {
       return NextResponse.json({ 
         images: [],
-        remainingCalls: apiCallTracker.getRemainingCalls(),
+        remainingCalls: available - 1, // Already incremented
         hasMore: false
       });
     }
@@ -170,16 +149,20 @@ export async function POST(
 
     return NextResponse.json({
       images: newImages,
-      remainingCalls: apiCallTracker.getRemainingCalls(),
+      remainingCalls: available - 1, // Already incremented
       hasMore: data.queries?.nextPage ? true : false,
       nextStartIndex: data.queries?.nextPage?.[0]?.startIndex || null
     });
 
   } catch (error) {
     console.error('Error in manual image fetch:', error);
+    
+    // Get current usage for error response
+    const { available: currentAvailable } = await canMakeApiCalls(1);
+    
     return NextResponse.json({ 
       error: 'Failed to fetch images',
-      remainingCalls: apiCallTracker.getRemainingCalls()
+      remainingCalls: currentAvailable
     }, { status: 500 });
   }
 }

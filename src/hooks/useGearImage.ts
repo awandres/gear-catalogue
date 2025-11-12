@@ -20,10 +20,32 @@ export function useGearImage({ id, name, brand, existingImageUrl }: UseGearImage
       return;
     }
 
-    // Otherwise, fetch an image (from Google or generate placeholder)
+    // Fetch primary image from database first, then fall back to other sources
     const fetchImage = async () => {
       try {
         setIsLoading(true);
+        
+        // First, try to get the primary image from the database
+        const imagesResponse = await fetch(`/api/gear/${id}/images`);
+        if (imagesResponse.ok) {
+          const imagesData = await imagesResponse.json();
+          const primaryImage = imagesData.images?.find((img: any) => img.isPrimary);
+          
+          if (primaryImage?.url) {
+            setImageUrl(primaryImage.url);
+            setIsLoading(false);
+            return;
+          }
+          
+          // If no primary but there are images, use the first one
+          if (imagesData.images?.length > 0) {
+            setImageUrl(imagesData.images[0].url);
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        // If no images in database, fall back to the old image endpoint
         const response = await fetch(
           `/api/gear/${id}/image?q=${encodeURIComponent(name)}&brand=${encodeURIComponent(brand)}`
         );

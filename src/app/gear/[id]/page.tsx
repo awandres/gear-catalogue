@@ -2,25 +2,61 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { GearDetail } from '@/components/gear/GearDetail';
 import { GearItem } from '@/lib/types';
+import { prisma } from '@/lib/db';
 
 async function getGearItem(id: string): Promise<GearItem | null> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/gear/${id}`, {
-      cache: 'no-store'
+    const gear = await prisma.gear.findUnique({
+      where: { id },
+      include: {
+        projectGear: {
+          include: {
+            project: {
+              select: {
+                id: true,
+                name: true,
+                primaryColor: true,
+                status: true,
+              }
+            }
+          }
+        }
+      }
     });
     
-    if (!response.ok) {
+    if (!gear) {
       return null;
     }
     
-    return response.json();
+    // Transform the data to match GearItem type
+    const gearItem: GearItem = {
+      id: gear.id,
+      name: gear.name,
+      brand: gear.brand,
+      category: gear.category,
+      subcategory: gear.subcategory,
+      description: gear.description,
+      soundCharacteristics: gear.soundCharacteristics as any,
+      tags: gear.tags,
+      parameters: gear.parameters as any,
+      specifications: gear.specifications as any,
+      usage: gear.usage as any,
+      media: gear.media as any,
+      connections: gear.connections as any,
+      notes: gear.notes || undefined,
+      dateAdded: gear.dateAdded?.toISOString().split('T')[0],
+      lastUsed: gear.lastUsed?.toISOString().split('T')[0],
+      projectGear: gear.projectGear as any,
+    };
+    
+    return gearItem;
   } catch (error) {
     console.error('Error fetching gear item:', error);
     return null;
   }
 }
 
-export default async function GearDetailPage({ params }: { params: { id: string } }) {
+export default async function GearDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const gear = await getGearItem(id);
   

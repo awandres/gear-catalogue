@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { filterGear, paginateGear, validateGearItem } from '@/lib/utils';
 import { GearFilters } from '@/lib/types';
+import { isAdminRequest } from '@/lib/admin';
 
 const prisma = new PrismaClient();
 
@@ -13,29 +14,41 @@ export async function GET(request: NextRequest) {
     // Parse filters from query params
     const filters: GearFilters = {
       category: searchParams.get('category') as any || undefined,
-      status: searchParams.get('status')?.split(',').filter(Boolean) as any || undefined,
       tags: searchParams.get('tags')?.split(',').filter(Boolean) || undefined,
       tone: searchParams.get('tone')?.split(',').filter(Boolean) || undefined,
       search: searchParams.get('search') || undefined,
+      projectId: searchParams.get('projectId') || undefined,
     };
     
     // Parse pagination params
     const page = parseInt(searchParams.get('page') || '1');
     const pageSize = parseInt(searchParams.get('pageSize') || '24');
     
+    // Check if user is admin
+    const isAdmin = await isAdminRequest(request);
+    
     // Build where clause for Prisma
     const where: any = {};
+    
+    // Filter out needs-review items for non-admin users
+    if (!isAdmin) {
+      where.category = { not: 'needs-review' };
+    }
     
     if (filters.category) {
       where.category = filters.category;
     }
     
-    if (filters.status?.length) {
-      where.status = { in: filters.status.map(s => s.replace('-', '_')) };
-    }
-    
     if (filters.tags?.length) {
       where.tags = { hasSome: filters.tags };
+    }
+    
+    if (filters.projectId) {
+      where.projectGear = {
+        some: {
+          projectId: filters.projectId
+        }
+      };
     }
     
     if (filters.search) {
@@ -56,12 +69,25 @@ export async function GET(request: NextRequest) {
       skip: (page - 1) * pageSize,
       take: pageSize,
       orderBy: { name: 'asc' },
+      include: {
+        projectGear: {
+          include: {
+            project: {
+              select: {
+                id: true,
+                name: true,
+                primaryColor: true,
+                status: true,
+              }
+            }
+          }
+        }
+      }
     });
     
-    // Convert status back to hyphenated format for frontend
+    // Format items for frontend
     const formattedItems = items.map(item => ({
       ...item,
-      status: item.status.replace('_', '-'),
       dateAdded: item.dateAdded?.toISOString().split('T')[0],
       lastUsed: item.lastUsed?.toISOString().split('T')[0],
     }));
@@ -82,10 +108,23 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/gear - Create new gear item
+// POST /api/gear - Create new gear item (Admin only)
 export async function POST(request: NextRequest) {
+  // Check admin authorization
+  if (!(await isAdminRequest(request))) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await request.json();
+    
+    // Generate ID if not provided
+    if (!body.id) {
+      body.id = `${body.brand.toLowerCase().replace(/\s+/g, '-')}-${body.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`;
+    }
     
     // Validate the gear item
     const validationErrors = validateGearItem(body);
@@ -108,9 +147,20 @@ export async function POST(request: NextRequest) {
     // Create in database
     const newGear = await prisma.gear.create({
       data: {
-        ...body,
-        status: body.status.replace('-', '_'),
-        soundCharacteristics: body.soundCharacteristics || {},
+        id: body.id,
+        name: body.name,
+        brand: body.brand,
+        category: body.category,
+        subcategory: body.subcategory,
+        description: body.description,
+        soundCharacteristics: body.soundCharacteristics || { tone: [], qualities: [] },
+        tags: body.tags || [],
+        parameters: body.parameters || null,
+        specifications: body.specifications || null,
+        usage: body.usage || null,
+        media: body.media || null,
+        connections: body.connections || null,
+        notes: body.notes || null,
         dateAdded: new Date(),
         lastUsed: new Date(),
       },
@@ -118,7 +168,10 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({
       ...newGear,
-      status: newGear.status.replace('_', '-'),
+      dateAdded: newGear.dateAdded?.toISOString(),
+      lastUsed: newGear.lastUsed?.toISOString(),
+      createdAt: newGear.createdAt.toISOString(),
+      updatedAt: newGear.updatedAt.toISOString(),
     }, { status: 201 });
   } catch (error) {
     console.error('Error creating gear:', error);

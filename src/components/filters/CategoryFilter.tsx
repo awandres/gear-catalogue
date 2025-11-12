@@ -1,6 +1,7 @@
 'use client';
 
 import { GEAR_CATEGORIES, GearCategory } from '@/lib/types';
+import { useAdmin } from '@/contexts/AdminContext';
 
 interface CategoryFilterProps {
   selected?: GearCategory;
@@ -9,7 +10,13 @@ interface CategoryFilterProps {
 }
 
 export function CategoryFilter({ selected, onChange, counts }: CategoryFilterProps) {
-  const categories = Object.keys(GEAR_CATEGORIES) as GearCategory[];
+  const { isAdmin } = useAdmin();
+  const allCategories = Object.keys(GEAR_CATEGORIES) as GearCategory[];
+  
+  // Filter out needs-review for non-admin users
+  const categories = isAdmin 
+    ? allCategories 
+    : allCategories.filter(cat => cat !== 'needs-review');
 
   return (
     <div className="space-y-2">

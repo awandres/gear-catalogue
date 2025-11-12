@@ -1,18 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { validateGearItem } from '@/lib/utils';
+import { isAdminRequest } from '@/lib/admin';
 
 const prisma = new PrismaClient();
 
 // GET /api/gear/[id] - Get single gear item
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await context.params;
     const gear = await prisma.gear.findUnique({
-      where: { id }
+      where: { id },
+      include: {
+        projectGear: {
+          include: {
+            project: {
+              select: {
+                id: true,
+                name: true,
+                primaryColor: true,
+                status: true,
+              }
+            }
+          }
+        }
+      }
     });
     
     if (!gear) {
@@ -22,10 +37,8 @@ export async function GET(
       );
     }
     
-    // Convert status back to hyphenated format
     return NextResponse.json({
       ...gear,
-      status: gear.status.replace('_', '-'),
       dateAdded: gear.dateAdded?.toISOString().split('T')[0],
       lastUsed: gear.lastUsed?.toISOString().split('T')[0],
     });
@@ -38,11 +51,19 @@ export async function GET(
   }
 }
 
-// PUT /api/gear/[id] - Update gear item
+// PUT /api/gear/[id] - Update gear item (Admin only)
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  // Check admin authorization
+  if (!(await isAdminRequest(request))) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
   try {
     const { id } = await context.params;
     const body = await request.json();
@@ -59,33 +80,35 @@ export async function PUT(
       );
     }
     
-    // Merge with existing data
-    const updatedData = { ...existing, ...body, id: params.id };
+    // Prepare update data
+    const updateData: any = {};
     
-    // Validate the updated item
-    const validationErrors = validateGearItem(updatedData);
-    if (validationErrors.length > 0) {
-      return NextResponse.json(
-        { errors: validationErrors },
-        { status: 400 }
-      );
-    }
+    if (body.name !== undefined) updateData.name = body.name;
+    if (body.brand !== undefined) updateData.brand = body.brand;
+    if (body.category !== undefined) updateData.category = body.category;
+    if (body.subcategory !== undefined) updateData.subcategory = body.subcategory;
+    if (body.description !== undefined) updateData.description = body.description;
+    if (body.soundCharacteristics !== undefined) updateData.soundCharacteristics = body.soundCharacteristics;
+    if (body.tags !== undefined) updateData.tags = body.tags;
+    if (body.parameters !== undefined) updateData.parameters = body.parameters;
+    if (body.specifications !== undefined) updateData.specifications = body.specifications;
+    if (body.usage !== undefined) updateData.usage = body.usage;
+    if (body.media !== undefined) updateData.media = body.media;
+    if (body.connections !== undefined) updateData.connections = body.connections;
+    if (body.notes !== undefined) updateData.notes = body.notes;
     
     // Update in database
     const updatedGear = await prisma.gear.update({
       where: { id },
-      data: {
-        ...body,
-        status: body.status?.replace('-', '_'),
-        lastUsed: new Date(),
-      },
+      data: updateData,
     });
     
     return NextResponse.json({
       ...updatedGear,
-      status: updatedGear.status.replace('_', '-'),
-      dateAdded: updatedGear.dateAdded?.toISOString().split('T')[0],
-      lastUsed: updatedGear.lastUsed?.toISOString().split('T')[0],
+      dateAdded: updatedGear.dateAdded?.toISOString(),
+      lastUsed: updatedGear.lastUsed?.toISOString(),
+      createdAt: updatedGear.createdAt.toISOString(),
+      updatedAt: updatedGear.updatedAt.toISOString(),
     });
   } catch (error) {
     console.error('Error updating gear item:', error);
@@ -96,11 +119,19 @@ export async function PUT(
   }
 }
 
-// DELETE /api/gear/[id] - Delete gear item
+// DELETE /api/gear/[id] - Delete gear item (Admin only)
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  // Check admin authorization
+  if (!(await isAdminRequest(request))) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
   try {
     const { id } = await context.params;
     const deletedGear = await prisma.gear.delete({
@@ -109,10 +140,7 @@ export async function DELETE(
     
     return NextResponse.json({ 
       message: 'Gear item deleted successfully',
-      deletedGear: {
-        ...deletedGear,
-        status: deletedGear.status.replace('_', '-'),
-      }
+      deletedGear
     });
   } catch (error) {
     console.error('Error deleting gear item:', error);

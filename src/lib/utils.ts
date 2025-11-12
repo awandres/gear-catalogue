@@ -22,11 +22,6 @@ export function filterGear(filters: GearFilters, gearList: GearItem[]): GearItem
       return false;
     }
     
-    // Status filter
-    if (filters.status?.length && !filters.status.includes(item.status)) {
-      return false;
-    }
-    
     // Tag filter (any match)
     if (filters.tags?.length) {
       const hasTag = filters.tags.some(tag => item.tags.includes(tag));
@@ -84,28 +79,14 @@ export function getTagsWithCounts(gearList: GearItem[]) {
 export function validateGearItem(item: Partial<GearItem>): string[] {
   const errors: string[] = [];
   
-  // Required fields
+  // Required fields - relaxed requirements
   if (!item.id) errors.push('ID is required');
   if (!item.name) errors.push('Name is required');
   if (!item.brand) errors.push('Brand is required');
   if (!item.category) errors.push('Category is required');
   if (!item.subcategory) errors.push('Subcategory is required');
-  if (!item.description || item.description.length < 50) {
-    errors.push('Description must be at least 50 characters');
-  }
-  if (!item.soundCharacteristics?.tone?.length || item.soundCharacteristics.tone.length < 2) {
-    errors.push('At least 2 tone characteristics required');
-  }
-  if (!item.tags?.length || item.tags.length < 3) {
-    errors.push('At least 3 tags required');
-  }
-  if (!item.status) errors.push('Status is required');
   
-  // Status validation
-  const validStatuses = ['available', 'in-use', 'archived', 'maintenance', 'broken'];
-  if (item.status && !validStatuses.includes(item.status)) {
-    errors.push(`Status must be one of: ${validStatuses.join(', ')}`);
-  }
+  // All other fields are optional now
   
   return errors;
 }
