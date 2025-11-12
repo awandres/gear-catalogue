@@ -465,19 +465,23 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   {groupedLoadout[category].map(({ gear, notes }) => {
                     if (!gear) return null;
                     return (
-                    <Card 
-                      key={gear.id} 
-                      className="transition-all relative group h-full border-l-4"
-                      style={{ 
-                        borderLeftColor: project.primaryColor,
-                        boxShadow: `0 1px 3px 0 ${project.primaryColor}20, 0 1px 2px -1px ${project.primaryColor}20`,
-                      }}
+                    <div
+                      key={gear.id}
+                      className="transition-all relative group h-full"
                       onMouseEnter={(e) => {
                         e.currentTarget.style.boxShadow = `0 10px 15px -3px ${project.primaryColor}30, 0 4px 6px -4px ${project.primaryColor}30`;
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.boxShadow = `0 1px 3px 0 ${project.primaryColor}20, 0 1px 2px -1px ${project.primaryColor}20`;
                       }}
+                      style={{ 
+                        borderLeftWidth: '4px',
+                        borderLeftColor: project.primaryColor,
+                        boxShadow: `0 1px 3px 0 ${project.primaryColor}20, 0 1px 2px -1px ${project.primaryColor}20`,
+                      }}
+                    >
+                    <Card 
+                      className="h-full border-0"
                     >
                       {/* Category Badge - Upper Right */}
                       <div 
@@ -529,6 +533,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                         </div>
                       </div>
                     </Card>
+                    </div>
                   );
                   })}
                 </div>
@@ -586,11 +591,13 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   const categoryColor = getCategoryColor(gear.category);
                   
                   return (
-                    <Card 
+                    <div
                       key={gear.id}
-                      className={`transition-all border-2 ${inProject ? 'opacity-50' : ''}`}
+                      className={`transition-all ${inProject ? 'opacity-50' : ''}`}
                       style={{
+                        borderWidth: '2px',
                         borderColor: inProject ? '#d1d5db' : categoryColor,
+                        borderRadius: '0.5rem',
                         boxShadow: inProject 
                           ? 'none' 
                           : `0 1px 3px 0 ${categoryColor}20, 0 1px 2px -1px ${categoryColor}20`,
@@ -605,6 +612,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                           e.currentTarget.style.boxShadow = `0 1px 3px 0 ${categoryColor}20, 0 1px 2px -1px ${categoryColor}20`;
                         }
                       }}
+                    >
+                    <Card 
+                      className="h-full border-0 shadow-none"
                     >
                       <div className="p-4">
                         <h4 className="font-semibold text-sm">{gear.name}</h4>
@@ -628,6 +638,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                         </button>
                       </div>
                     </Card>
+                    </div>
                   );
                 })}
               </div>
