@@ -60,6 +60,21 @@ export default function KennyPage() {
       return;
     }
 
+    // Warn if using significant API calls
+    if (imageCount > 20) {
+      if (!confirm(`⚠️ WARNING: You're about to use ${imageCount} Google API calls!\n\nThis will leave only ${(apiUsage?.remaining || 0) - imageCount} calls for the rest of the day.\n\nAre you sure you want to proceed?`)) {
+        return;
+      }
+    }
+
+    // Extra warning for very large amounts or auto mode
+    if (imageCount > 50 || (!imageCount && (apiUsage?.remaining || 0) > 50)) {
+      const willUse = imageCount || apiUsage?.remaining || 0;
+      if (!confirm(`🚨 FINAL WARNING: This will use ${willUse} API calls!\n\nThis is a SHARED quota. Other users will not be able to fetch images today.\n\nRECOMMENDATION: Set to 0 instead and manually add images.\n\nProceed anyway?`)) {
+        return;
+      }
+    }
+
     setProcessing(true);
     setError(null);
     setResults(null);
@@ -196,17 +211,49 @@ export default function KennyPage() {
           </div>
         </div>
 
+        {/* ⚠️ CRITICAL API USAGE WARNING */}
+        <Card className="mb-6 bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-300">
+          <CardContent className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <svg className="w-12 h-12 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-red-900 mb-2 font-mono">⚠️ SHARED API QUOTA - USE CAREFULLY!</h3>
+                <div className="space-y-2 text-sm text-red-800">
+                  <p className="font-semibold">
+                    🚨 This app shares ONE Google API account with a limit of 100 image searches per day (resets at midnight).
+                  </p>
+                  <p>
+                    <strong>DO NOT upload large gear lists with automatic image fetching!</strong> Each gear item uses 1 API call.
+                    If you use all 100 calls, NO ONE can fetch images for the rest of the day.
+                  </p>
+                  <p className="bg-red-100 border border-red-300 rounded px-3 py-2 font-semibold">
+                    ⚡ RECOMMENDATION: Set image count to 0 (zero) for bulk uploads, then manually add images to important items only.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* API Usage Stats */}
         {!loadingUsage && apiUsage && (
-          <Card className="mb-6 bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+          <Card className="mb-6 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-1 font-mono">Google Image API Usage</h3>
-                  <p className="text-sm text-gray-600">Daily limit: 100 calls | Resets at midnight</p>
+                  <h3 className="text-lg font-bold text-gray-900 mb-1 font-mono">Google Image API Usage Today</h3>
+                  <p className="text-sm text-gray-600">Daily limit: 100 calls | Shared across all users | Resets at midnight PST</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-3xl font-bold text-purple-600 font-mono">
+                  <div className={`text-3xl font-bold font-mono ${
+                    apiUsage.remaining < 10 ? 'text-red-600' :
+                    apiUsage.remaining < 30 ? 'text-orange-600' :
+                    'text-purple-600'
+                  }`}>
                     {apiUsage.remaining}
                   </div>
                   <div className="text-sm text-gray-600 font-mono">calls remaining</div>
@@ -215,19 +262,30 @@ export default function KennyPage() {
               <div className="mt-4">
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-600">Used: {apiUsage.used} / {apiUsage.limit}</span>
-                  <span className="font-semibold text-purple-600">{apiUsage.percentage}%</span>
+                  <span className={`font-semibold ${
+                    apiUsage.percentage > 90 ? 'text-red-600' :
+                    apiUsage.percentage > 70 ? 'text-orange-600' :
+                    'text-purple-600'
+                  }`}>{apiUsage.percentage}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                   <div 
                     className={`h-full transition-all rounded-full ${
                       apiUsage.percentage > 90 ? 'bg-red-500' :
-                      apiUsage.percentage > 70 ? 'bg-yellow-500' :
+                      apiUsage.percentage > 70 ? 'bg-orange-500' :
                       'bg-green-500'
                     }`}
                     style={{ width: `${apiUsage.percentage}%` }}
                   ></div>
                 </div>
               </div>
+              {apiUsage.percentage > 80 && (
+                <div className="mt-3 p-3 bg-red-100 border border-red-300 rounded-lg">
+                  <p className="text-sm font-semibold text-red-800">
+                    ⚠️ WARNING: Less than {apiUsage.remaining} calls remaining! Set image count to 0 to preserve quota.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -273,38 +331,66 @@ Rhodes Mark I"
               />
 
               {/* Image API Calls Selector */}
-              <div className="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                <label className="block text-sm font-semibold text-gray-900 mb-2 font-mono">
-                  Google Image API Calls for This Upload
-                </label>
-                <p className="text-xs text-gray-600 mb-3">
-                  {apiUsage && (
-                    <span>
-                      {apiUsage.remaining} calls remaining today. 
-                      {apiUsage.remaining === 0 && ' No images will be fetched.'}
-                    </span>
-                  )}
-                  {!apiUsage && 'Loading usage...'}
-                </p>
+              <div className="mt-4 p-4 bg-red-50 border-2 border-red-400 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <label className="block text-sm font-bold text-red-900 font-mono">
+                    Image API Calls (SHARED QUOTA)
+                  </label>
+                </div>
+                
+                <div className="mb-3 p-3 bg-red-100 border border-red-300 rounded">
+                  <p className="text-xs font-semibold text-red-900 mb-1">
+                    ⚠️ RECOMMENDED: Keep at 0 for bulk uploads!
+                  </p>
+                  <p className="text-xs text-red-800">
+                    {apiUsage && (
+                      <span>
+                        Only {apiUsage.remaining} of 100 daily calls remaining (shared with all users).
+                        {apiUsage.remaining === 0 && ' QUOTA EXHAUSTED - No images can be fetched today.'}
+                        {apiUsage.remaining < 20 && apiUsage.remaining > 0 && ' QUOTA LOW - Use sparingly!'}
+                      </span>
+                    )}
+                    {!apiUsage && 'Loading usage...'}
+                  </p>
+                </div>
+
                 <input
                   type="number"
                   min="0"
                   max={apiUsage?.remaining || 0}
-                  value={imageCount || ''}
-                  onChange={(e) => setImageCount(parseInt(e.target.value) || 0)}
-                  onFocus={(e) => {
-                    if (e.target.value === '0') {
+                  value={imageCount === 0 ? '0' : imageCount || ''}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    if (isNaN(val) || val < 0) {
                       setImageCount(0);
-                      e.target.value = '';
+                    } else {
+                      setImageCount(val);
                     }
                   }}
-                  placeholder={`Auto (max ${apiUsage?.remaining || 0})`}
-                  className="w-full px-4 py-2 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="0 (no images)"
+                  className="w-full px-4 py-2 border-2 border-red-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono text-lg font-bold"
                 />
-                <p className="text-xs text-gray-500 mt-2">
-                  Leave empty to automatically fetch images for as many items as possible (up to daily limit).
-                  Or enter a specific number to limit API calls for this upload.
-                </p>
+                <div className="mt-2 space-y-1">
+                  <p className="text-xs text-gray-700 font-semibold">
+                    • 0 = No images (RECOMMENDED for bulk uploads)
+                  </p>
+                  <p className="text-xs text-gray-700">
+                    • Blank = Auto-fetch up to {apiUsage?.remaining || 0} images (uses ALL remaining quota!)
+                  </p>
+                  <p className="text-xs text-gray-700">
+                    • Specific number = Fetch exactly that many images
+                  </p>
+                </div>
+                {imageCount > 10 && (
+                  <div className="mt-2 p-2 bg-orange-100 border border-orange-400 rounded">
+                    <p className="text-xs font-semibold text-orange-900">
+                      ⚠️ You're about to use {imageCount} API calls! This leaves only {(apiUsage?.remaining || 0) - imageCount} for other users today.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3 mt-4">
