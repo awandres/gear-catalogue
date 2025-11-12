@@ -21,6 +21,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Gear Catalogue - Professional Studio Equipment",
   description: "Browse and manage professional studio gear",
+  icons: {
+    icon: [
+      { url: '/vinyl-record.svg', type: 'image/svg+xml' },
+    ],
+    apple: [
+      { url: '/vinyl-record.svg', type: 'image/svg+xml' },
+    ],
+  },
 };
 
 export default function RootLayout({

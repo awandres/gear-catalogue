@@ -325,7 +325,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                       className="inline-block px-3 py-1.5 rounded-full text-white font-bold text-sm shadow-md"
                       style={{ backgroundColor: getCategoryColor(category) }}
                     >
-                      {category.replace(/-/g, ' ')}s
+                      {category.replace(/-/g, ' ')}
                     </div>
                     {isAdmin && (
                       <button
@@ -376,10 +376,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                       {isAdmin && (
                         <button
                           onClick={() => handleRemoveGear(gear.id)}
-                          className="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
+                          className="absolute bottom-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-30"
                           title="Remove from project"
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
