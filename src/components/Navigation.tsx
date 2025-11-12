@@ -5,6 +5,12 @@ import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAdmin } from '@/contexts/AdminContext';
 
+interface NavLink {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+}
+
 export function Navigation() {
   const { isAdmin } = useAdmin();
   const pathname = usePathname();
@@ -12,7 +18,7 @@ export function Navigation() {
 
   const isActive = (path: string) => pathname?.startsWith(path);
 
-  const navLinks = [
+  const navLinks: NavLink[] = [
     { href: '/gear', label: 'Gear', icon: null },
     { href: '/projects', label: 'Projects', icon: null },
   ];

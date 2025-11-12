@@ -11,6 +11,116 @@ import { ConfirmModal } from '@/components/admin/gear/ConfirmModal';
 import { getCategoryColor } from '@/lib/categoryColors';
 import toast from 'react-hot-toast';
 import { MasonryGrid } from '@/components/projects/MasonryGrid';
+import { ProjectTimeline, TimelineEvent } from '@/components/projects/ProjectTimeline';
+
+// Generate dummy timeline events for demo
+const generateDummyTimeline = (projectId: string, projectStatus: string): TimelineEvent[] => {
+  const now = new Date();
+  
+  const events: TimelineEvent[] = [
+    {
+      id: `${projectId}-contract`,
+      type: 'contract',
+      title: 'Contract Signed',
+      description: 'Project agreement finalized and signed by client',
+      date: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000), // 15 days ago
+      completed: true,
+      visibleTo: 'both',
+    },
+    {
+      id: `${projectId}-deposit`,
+      type: 'deposit',
+      title: 'Deposit Received',
+      description: '50% deposit payment confirmed - studio time reserved',
+      date: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
+      completed: true,
+      visibleTo: 'both',
+    },
+    {
+      id: `${projectId}-prep-demos`,
+      type: 'prep',
+      title: 'Scratch Demos Due',
+      description: 'Client to provide rough demos for pre-production review',
+      date: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
+      completed: false,
+      visibleTo: 'both',
+    },
+    {
+      id: `${projectId}-prep-meeting`,
+      type: 'milestone',
+      title: 'Pre-Production Meeting',
+      description: 'Review arrangements, discuss gear choices, and finalize session plan',
+      date: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
+      completed: false,
+      visibleTo: 'both',
+    },
+    {
+      id: `${projectId}-session-day1`,
+      type: 'session',
+      title: 'Recording Session - Day 1',
+      description: 'Drum tracking and basic rhythm section',
+      date: new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000), // 10 days from now
+      completed: false,
+      visibleTo: 'both',
+    },
+    {
+      id: `${projectId}-session-day2`,
+      type: 'session',
+      title: 'Recording Session - Day 2',
+      description: 'Guitar and bass overdubs',
+      date: new Date(now.getTime() + 11 * 24 * 60 * 60 * 1000), // 11 days from now
+      completed: false,
+      visibleTo: 'both',
+    },
+    {
+      id: `${projectId}-session-day3`,
+      type: 'session',
+      title: 'Recording Session - Day 3',
+      description: 'Vocal tracking and additional overdubs',
+      date: new Date(now.getTime() + 12 * 24 * 60 * 60 * 1000), // 12 days from now
+      completed: false,
+      visibleTo: 'both',
+    },
+    {
+      id: `${projectId}-mixing-deadline`,
+      type: 'deadline',
+      title: 'Mixing Deadline',
+      description: 'Final mixes due for client review',
+      date: new Date(now.getTime() + 20 * 24 * 60 * 60 * 1000), // 20 days from now
+      completed: false,
+      visibleTo: 'both',
+    },
+    {
+      id: `${projectId}-master-approval`,
+      type: 'deadline',
+      title: 'Master Approval Deadline',
+      description: 'Client final approval needed for mastered tracks',
+      date: new Date(now.getTime() + 25 * 24 * 60 * 60 * 1000), // 25 days from now
+      completed: false,
+      visibleTo: 'both',
+    },
+    {
+      id: `${projectId}-final-payment`,
+      type: 'deposit',
+      title: 'Final Payment Due',
+      description: 'Remaining 50% balance due before master delivery',
+      date: new Date(now.getTime() + 27 * 24 * 60 * 60 * 1000), // 27 days from now
+      completed: false,
+      visibleTo: 'admin',
+    },
+    {
+      id: `${projectId}-delivery`,
+      type: 'milestone',
+      title: 'Project Delivery',
+      description: 'Final masters and project files delivered to client',
+      date: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      completed: false,
+      visibleTo: 'both',
+    },
+  ];
+
+  return events;
+};
 
 const statusStyles: Record<string, { bgColor: string; textColor: string }> = {
   PLANNING: { bgColor: '#fef3c7', textColor: '#92400e' }, // yellow-100 bg, yellow-900 text
@@ -296,6 +406,13 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
+      {/* Project Timeline */}
+      <ProjectTimeline 
+        events={generateDummyTimeline(project.id, project.status)}
+        projectColor={project.primaryColor}
+        isAdmin={isAdmin}
+      />
+
       {/* Selected Gear Loadout */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
@@ -348,19 +465,23 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   {groupedLoadout[category].map(({ gear, notes }) => {
                     if (!gear) return null;
                     return (
-                    <Card 
-                      key={gear.id} 
-                      className="transition-all relative group h-full border-l-4"
-                      style={{ 
-                        borderLeftColor: project.primaryColor,
-                        boxShadow: `0 1px 3px 0 ${project.primaryColor}20, 0 1px 2px -1px ${project.primaryColor}20`,
-                      }}
+                    <div
+                      key={gear.id}
+                      className="transition-all relative group h-full"
                       onMouseEnter={(e) => {
                         e.currentTarget.style.boxShadow = `0 10px 15px -3px ${project.primaryColor}30, 0 4px 6px -4px ${project.primaryColor}30`;
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.boxShadow = `0 1px 3px 0 ${project.primaryColor}20, 0 1px 2px -1px ${project.primaryColor}20`;
                       }}
+                      style={{ 
+                        borderLeftWidth: '4px',
+                        borderLeftColor: project.primaryColor,
+                        boxShadow: `0 1px 3px 0 ${project.primaryColor}20, 0 1px 2px -1px ${project.primaryColor}20`,
+                      }}
+                    >
+                    <Card 
+                      className="h-full border-0"
                     >
                       {/* Category Badge - Upper Right */}
                       <div 
@@ -412,6 +533,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                         </div>
                       </div>
                     </Card>
+                    </div>
                   );
                   })}
                 </div>
@@ -469,11 +591,13 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   const categoryColor = getCategoryColor(gear.category);
                   
                   return (
-                    <Card 
+                    <div
                       key={gear.id}
-                      className={`transition-all border-2 ${inProject ? 'opacity-50' : ''}`}
+                      className={`transition-all ${inProject ? 'opacity-50' : ''}`}
                       style={{
+                        borderWidth: '2px',
                         borderColor: inProject ? '#d1d5db' : categoryColor,
+                        borderRadius: '0.5rem',
                         boxShadow: inProject 
                           ? 'none' 
                           : `0 1px 3px 0 ${categoryColor}20, 0 1px 2px -1px ${categoryColor}20`,
@@ -488,6 +612,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                           e.currentTarget.style.boxShadow = `0 1px 3px 0 ${categoryColor}20, 0 1px 2px -1px ${categoryColor}20`;
                         }
                       }}
+                    >
+                    <Card 
+                      className="h-full border-0 shadow-none"
                     >
                       <div className="p-4">
                         <h4 className="font-semibold text-sm">{gear.name}</h4>
@@ -511,6 +638,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                         </button>
                       </div>
                     </Card>
+                    </div>
                   );
                 })}
               </div>
