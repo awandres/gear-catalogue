@@ -63,13 +63,17 @@ export async function GET(request: NextRequest) {
     // Get total count
     const totalItems = await prisma.gear.count({ where });
     
-    // Get paginated items
+    // Get paginated items with images
     const items = await prisma.gear.findMany({
       where,
       skip: (page - 1) * pageSize,
       take: pageSize,
       orderBy: { name: 'asc' },
       include: {
+        images: {
+          where: { isPrimary: true },
+          take: 1
+        },
         projectGear: {
           include: {
             project: {
@@ -90,6 +94,9 @@ export async function GET(request: NextRequest) {
       ...item,
       dateAdded: item.dateAdded?.toISOString().split('T')[0],
       lastUsed: item.lastUsed?.toISOString().split('T')[0],
+      media: {
+        photos: item.images?.length > 0 ? [item.images[0].url] : []
+      }
     }));
     
     return NextResponse.json({
