@@ -9,6 +9,7 @@
 
 - **GitHub**: https://github.com/awandres/gear-catalogue
 - **Branch Strategy**: Main branch for production-ready code
+- **Production URL**: [Deployed on Vercel] (check Vercel dashboard for live URL)
 
 ## Project Overview
 
@@ -20,8 +21,9 @@ The Gear Catalogue App is a comprehensive audio/studio equipment management syst
 
 - Browse gear items in a responsive grid layout (3 items per row)
 - Search functionality with real-time filtering
-- Filter by category, status, and tags
+- Filter by category, projects, and tags
 - Pagination for large datasets
+- Project-based gear organization and loadouts
 
 ✅ **Gear Management**
 
@@ -39,6 +41,16 @@ The Gear Catalogue App is a comprehensive audio/studio equipment management syst
 - Responsive design for mobile and desktop
 - Custom placeholder SVG with music/audio theme
 
+✅ **Projects & Loadouts** (Phase 4)
+
+- Create and manage studio recording projects
+- Build custom gear loadouts for each project
+- Project status tracking (Planning, Confirmed, In Session, Completed, Archived)
+- Add notes to gear items within projects
+- Visual project cards with client information
+- Filter gear by active project
+- Masonry grid layout for project overview
+
 ✅ **Technical Implementation**
 
 - Next.js 16 with App Router
@@ -46,6 +58,9 @@ The Gear Catalogue App is a comprehensive audio/studio equipment management syst
 - PostgreSQL database with Prisma ORM
 - API routes for all CRUD operations
 - Tailwind CSS for styling
+- Deployed to Vercel with PostgreSQL database
+- Vercel Blob Storage for image uploads
+- Google Custom Search API integration (optional)
 
 ## Tech Stack
 
@@ -256,93 +271,172 @@ gear-catalogue/
 
 - `docs/PHASE2_SUMMARY.md` - CRUD implementation details
 - `docs/PHASE3_SUMMARY.md` - Image management details
+- `docs/PHASE4_STUDIO_PROJECTS.md` - Projects and loadouts feature
 - `docs/AGENT_HANDOFFS.md` - Complete handoff documentation
+
+### ✅ Projects & Loadouts (Phase 4)
+
+**Status:** Fully implemented and deployed to production!
+
+**Project Management:**
+
+- ✅ Create projects with client information
+- ✅ Project status workflow (Planning → Confirmed → In Session → Completed → Archived)
+- ✅ Project-specific color themes for visual organization
+- ✅ Share tokens for client access (foundation)
+- ✅ Masonry grid layout for projects overview
+
+**Gear Loadouts:**
+
+- ✅ Add/remove gear to project loadouts
+- ✅ Per-item notes within projects
+- ✅ Category-based grouping in loadouts
+- ✅ Visual indicators for gear in active projects
+- ✅ Filter main gear list by active project
+- ✅ Bulk operations (remove by category)
+
+**See documentation:**
+
+- `docs/PHASE4_STUDIO_PROJECTS.md` - Implementation details
+
+---
+
+## 🚀 Deployment Status
+
+**Status:** ✅ **LIVE IN PRODUCTION**
+
+- **Platform:** Vercel
+- **Database:** Vercel Postgres (PostgreSQL)
+- **Storage:** Vercel Blob Storage
+- **Deployed:** November 12, 2024
+- **Environment:** Production-ready with all migrations applied
+
+**Deployment Documentation:**
+- `DEPLOY.md` - Quick deployment guide (~30 minutes)
+- `docs/DEPLOYMENT_GUIDE.md` - Complete step-by-step guide
+- `docs/DEPLOYMENT_CHECKLIST.md` - Deployment checklist
+- `docs/ENVIRONMENT_VARIABLES.md` - All environment variables explained
 
 ---
 
 ## Known Issues & TODOs
 
-### High Priority
+### ✅ Recently Completed
 
-1. **Authentication Enhancement** _(Foundation complete)_
+- ✅ **Projects & Loadouts System** - Full project management with gear loadouts (Phase 4)
+- ✅ **Production Deployment** - Successfully deployed to Vercel with PostgreSQL
+- ✅ **Database Migrations** - All migrations applied including ApiUsage tracking
+- ✅ **Image Management** - Vercel Blob Storage integration with upload/delete
+- ✅ **Admin CRUD Operations** - Full create, read, update, delete functionality
 
+### 🔥 High Priority (Next Phase)
+
+1. **Client Sharing & Collaboration**
+   - Implement public share links for projects using shareToken
+   - Client-facing view (read-only) of project loadouts
+   - Print/PDF export of gear lists for clients
+   - Email notifications for project updates
+
+2. **Authentication Enhancement** _(Foundation complete)_
    - Migrate from key-based to NextAuth.js
    - Add user accounts and roles
    - Implement session management
-   - Role-based permissions (admin, editor, viewer)
+   - Role-based permissions (admin, editor, viewer, client)
 
-2. **Image Optimization** _(Basic system complete)_
-   - Generate image thumbnails
-   - WebP conversion for better compression
-   - Responsive image variants
-   - Advanced image editing (crop, rotate)
+3. **Google Image Search Integration** _(API ready)_
+   - Test and optimize automatic image fetching
+   - Monitor API usage and quotas
+   - Implement fallback strategies for quota limits
+   - Add manual image search/selection UI
 
-### Medium Priority
+### 📊 Medium Priority
 
-4. **Search Enhancements**
+4. **Analytics & Insights**
+   - Track most-used gear across projects
+   - Project duration and equipment utilization stats
+   - Generate reports for business insights
+   - Cost tracking per project
 
+5. **Search Enhancements**
    - Add advanced search with multiple criteria
    - Implement fuzzy search for better results
    - Add search history/suggestions
+   - Search within project loadouts
 
-5. **Performance**
-
+6. **Performance Optimization**
    - Implement image optimization and lazy loading
    - Add caching strategy for API responses
    - Optimize database queries with proper indexing
+   - CDN integration for static assets
 
-6. **Features**
+### 💡 Future Features
+
+7. **Enhanced Project Management**
+   - Project templates (e.g., "Full Band Recording", "Podcast Setup")
+   - Clone projects for similar sessions
+   - Project timeline and scheduling
+   - Integration with calendar apps
+
+8. **Gear Features**
    - Add gear comparison functionality
    - Implement favorites/wishlist system
-   - Add gear rental tracking
+   - Add gear rental/loan tracking
    - Create preset/patch management for digital gear
+   - Maintenance schedules and reminders
 
-### Low Priority
-
-7. **UI/UX Improvements**
-
+9. **UI/UX Improvements**
    - Add dark mode toggle
    - Implement keyboard shortcuts
-   - Add more detailed filters (price range, year)
-   - Create mobile app views
+   - Add more detailed filters (price range, year, manufacturer)
+   - Mobile app optimization
+   - Drag-and-drop gear organization
 
-8. **Integration**
-   - API documentation with OpenAPI/Swagger
-   - Webhook support for external integrations
-   - Export to common formats (CSV, PDF)
+10. **Integration & Export**
+    - API documentation with OpenAPI/Swagger
+    - Webhook support for external integrations
+    - Export to common formats (CSV, PDF, Excel)
+    - Integration with DAW session metadata
 
 ## Deployment Considerations
 
+### ✅ Current Production Setup
+
+**Platform:** Vercel (Hobby Plan)
+- ✅ Automatic deployments from GitHub main branch
+- ✅ Serverless functions for all API routes
+- ✅ Automatic HTTPS and custom domain support
+- ✅ PostgreSQL database (Vercel Postgres)
+- ✅ Blob Storage for image uploads
+- ✅ Cron jobs for daily image fetching
+
 ### Environment Variables
 
-Required environment variables for production:
+**Required in Production:**
+- ✅ `DATABASE_URL` - PostgreSQL connection string (Vercel Postgres)
+- ✅ `ADMIN_ACCESS_KEY` - Secure admin authentication key
+- ✅ `BLOB_READ_WRITE_TOKEN` - Vercel Blob Storage token
+- ✅ `CRON_SECRET` - Cron job protection secret
+- ✅ `NEXT_PUBLIC_BASE_URL` - Production URL
 
-- `DATABASE_URL` - PostgreSQL connection string
-- `NEXT_PUBLIC_APP_URL` - Public URL of the application
+**Optional:**
+- `GOOGLE_CSE_API_KEY` - Google Custom Search API key
+- `GOOGLE_CSE_ID` - Google Custom Search Engine ID
+
+**See:** `docs/ENVIRONMENT_VARIABLES.md` for complete reference
 
 ### Database
 
-- Ensure PostgreSQL is accessible from production environment
-- Run migrations before deploying new versions
-- Consider connection pooling for production
+- ✅ PostgreSQL on Vercel Postgres (256MB storage, 60 compute hours/month free tier)
+- ✅ All 6 migrations applied successfully
+- ✅ Connection pooling handled by Vercel
+- ✅ Automatic backups (on paid plans)
 
-### Recommended Platforms
+### Monitoring & Maintenance
 
-1. **Vercel** (recommended for Next.js)
-
-   - Automatic deployments from GitHub
-   - Built-in analytics and performance monitoring
-   - Edge functions support
-
-2. **Railway/Render**
-
-   - Good for full-stack deployment with PostgreSQL
-   - Easy database provisioning
-
-3. **Self-hosted**
-   - Use PM2 or similar for process management
-   - Nginx for reverse proxy
-   - Let's Encrypt for SSL
+- Vercel dashboard for deployment logs and analytics
+- Database queries monitored via Vercel Postgres dashboard
+- API usage tracking via `ApiUsage` table
+- Error logging via console.error (consider Sentry integration later)
 
 ## Development Workflow
 
@@ -367,7 +461,28 @@ Required environment variables for production:
 
 ---
 
-_Last Updated: November 10, 2024_
+_Last Updated: November 12, 2024_  
 _Document maintained by: Alex Wandres_
 
-**Latest Milestone:** Phase 3 (Image Management) completed! Full CRUD + Image Management now live.
+## 🎉 Latest Milestones
+
+**November 12, 2024 - PRODUCTION DEPLOYMENT SUCCESS! 🚀**
+- ✅ Successfully deployed to Vercel production
+- ✅ All database migrations applied
+- ✅ Phase 4 (Projects & Loadouts) fully functional
+- ✅ Image management with Vercel Blob Storage working
+- ✅ Admin CRUD operations operational
+- ✅ Google API integration configured
+
+**November 11, 2024 - Phase 4 Complete**
+- Projects & Loadouts system implemented
+- Full project management with gear organization
+- Status workflow and project filtering
+
+**November 10, 2024 - Phase 3 Complete**  
+- Image Management system with Vercel Blob Storage
+- Upload, delete, and primary image selection
+
+**November 4, 2024 - Phase 2 Complete**  
+- Full CRUD operations for gear items
+- Admin authentication system

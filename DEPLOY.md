@@ -101,8 +101,8 @@ vercel link
 # Pull environment variables (gets DATABASE_URL)
 vercel env pull .env.production
 
-# Run migrations
-DATABASE_URL="$(grep DATABASE_URL .env.production | cut -d '=' -f2-)" npx prisma migrate deploy
+# Run migrations (note: removes quotes from DATABASE_URL)
+DATABASE_URL=$(grep DATABASE_URL .env.production | head -1 | cut -d '=' -f2- | sed 's/"//g') npx prisma migrate deploy
 
 # Clean up (DON'T commit this file!)
 rm .env.production
@@ -117,7 +117,7 @@ rm .env.production
 ```bash
 # Copy your DATABASE_URL from Vercel dashboard
 # Then run:
-DATABASE_URL="your-production-database-url-here" npm run db:seed
+DATABASE_URL="postgres://7e03fadb86051c81ce39abec812994edf4791b496ab02997f8bfae60550a9981:sk_ZP4A-joYlWAQfIPxpgnYg@db.prisma.io:5432/postgres?sslmode=require" npm run db:seed
 ```
 
 ---

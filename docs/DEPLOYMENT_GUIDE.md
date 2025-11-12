@@ -193,8 +193,8 @@ vercel link
 # Pull environment variables (including DATABASE_URL)
 vercel env pull .env.production
 
-# Run migration
-DATABASE_URL="$(grep DATABASE_URL .env.production | cut -d '=' -f2-)" npx prisma migrate deploy
+# Run migration (note: removes quotes from DATABASE_URL)
+DATABASE_URL=$(grep DATABASE_URL .env.production | head -1 | cut -d '=' -f2- | sed 's/"//g') npx prisma migrate deploy
 
 # Delete the .env.production file (don't commit it!)
 rm .env.production
