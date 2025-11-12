@@ -60,12 +60,46 @@ export function StickyProjectBar({
     <div className={`fixed top-0 left-0 right-0 shadow-lg transition-all duration-200 ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}`} style={{ zIndex: isVisible ? 99999 : 0 }}>
       <div className="bg-gradient-to-r from-blue-900 to-purple-900 text-white">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between py-2">
+          
+          {/* Mobile: Dropdown Selector */}
+          <div className="md:hidden flex items-center justify-between py-3">
+            <span className="text-xs font-semibold uppercase tracking-wide opacity-75 mr-3">
+              Project:
+            </span>
+            
+            <select
+              value={activeProjectId || ''}
+              onChange={(e) => onProjectSelect(e.target.value || null)}
+              className="flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all text-gray-900 bg-white border-2"
+              style={
+                activeProjectId && activeProject
+                  ? { borderColor: activeProject.primaryColor }
+                  : {}
+              }
+            >
+              <option value="">None</option>
+              {projects.map(project => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
+
+            <Link 
+              href="/projects" 
+              className="text-xs text-blue-200 hover:text-white transition-colors ml-3 whitespace-nowrap"
+            >
+              View All →
+            </Link>
+          </div>
+
+          {/* Desktop: Original Horizontal Layout */}
+          <div className="hidden md:flex items-center justify-between py-2">
             <span className="text-xs font-semibold uppercase tracking-wide opacity-75">
               Active Project:
             </span>
             
-            <div className="flex items-center gap-2 flex-1 ml-4">
+            <div className="flex items-center gap-2 flex-1 ml-4 overflow-x-auto">
               <button
                 onClick={() => onProjectSelect(null)}
                 className={`
@@ -84,7 +118,7 @@ export function StickyProjectBar({
                 const isExpanded = expandedProjectId === project.id;
                 
                 return (
-                  <div key={project.id} className="relative">
+                  <div key={project.id} className="relative flex-shrink-0">
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => onProjectSelect(project.id)}
@@ -158,14 +192,14 @@ export function StickyProjectBar({
             </Link>
           </div>
 
-          {/* Expandable Gear Lists */}
+          {/* Expandable Gear Lists - Desktop only (hidden on mobile) */}
           {projects.map(project => {
             if (expandedProjectId !== project.id || !project.gearLoadout) return null;
             
             return (
               <div 
                 key={`expanded-${project.id}`}
-                className="border-t py-3 animate-slideDown"
+                className="hidden md:block border-t py-3 animate-slideDown"
                 style={{ 
                   borderColor: project.primaryColor,
                   backgroundColor: `${project.primaryColor}15` // 15 = ~8% opacity
