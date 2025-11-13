@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/db';
 import { validateGearItem } from '@/lib/utils';
 import { isAdminRequest } from '@/lib/admin';
-
-const prisma = new PrismaClient();
 
 // GET /api/gear/[id] - Get single gear item
 export async function GET(

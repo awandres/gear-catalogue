@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/db';
 import { canMakeApiCalls, incrementApiUsage } from '@/app/api/admin/api-usage/route';
-
-const prisma = new PrismaClient();
 
 // Google Custom Search API configuration
 const GOOGLE_CSE_API_KEY = process.env.GOOGLE_CSE_API_KEY;

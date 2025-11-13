@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/db';
 import { isAdminRequest } from "@/lib/admin";
 import { canMakeApiCalls, incrementApiUsage } from "../api-usage/route";
-
-const prisma = new PrismaClient();
 
 // Check if gear only has placeholder image
 async function hasOnlyPlaceholder(gearId: string): Promise<boolean> {

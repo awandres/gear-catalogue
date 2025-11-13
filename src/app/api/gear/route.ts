@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/db';
 import { filterGear, paginateGear, validateGearItem } from '@/lib/utils';
 import { GearFilters } from '@/lib/types';
 import { isAdminRequest } from '@/lib/admin';
-
-const prisma = new PrismaClient();
 
 // GET /api/gear - List all gear with filtering and pagination
 export async function GET(request: NextRequest) {

@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/db';
 import { GEAR_CATEGORIES } from '@/lib/types';
-
-const prisma = new PrismaClient();
 
 // GET /api/gear/categories - List all categories with counts
 export async function GET() {

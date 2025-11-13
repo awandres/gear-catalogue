@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/db';
 import { isAdminRequest } from '@/lib/admin';
-
-const prisma = new PrismaClient();
 
 const DAILY_LIMIT = 100;
 
