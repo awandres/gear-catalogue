@@ -6,6 +6,7 @@ import { AdminProvider } from "@/contexts/AdminContext";
 import { AdminToggle } from "@/components/admin/AdminToggle";
 import { AdminToolbar } from "@/components/admin/AdminToolbar";
 import { Navigation } from "@/components/Navigation";
+import { VersionBadge } from "@/components/VersionBadge";
 import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
@@ -81,7 +82,10 @@ export default function RootLayout({
                   <Link href="/" className="text-xl font-bold">Gear Catalogue</Link>
                   <Navigation />
                 </div>
-                <AdminToggle />
+                <div className="flex items-center gap-3">
+                  <VersionBadge />
+                  <AdminToggle />
+                </div>
               </div>
             </header>
             

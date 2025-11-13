@@ -13,7 +13,7 @@ export async function GET() {
     
     // Create a map for easier lookup
     const countMap = new Map(
-      categoryCounts.map(item => [item.category, item._count])
+      categoryCounts.map((item: any) => [item.category, item._count])
     );
     
     // Format response
