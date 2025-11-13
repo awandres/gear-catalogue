@@ -4,19 +4,21 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "fetch-images": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/fetch-gear-images.ts"
+    "fetch-images": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/fetch-gear-images.ts",
+    "postinstall": "prisma generate"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
+    "@prisma/extension-accelerate": "^2.0.2",
     "@vercel/blob": "^2.0.0",
     "browser-image-compression": "^2.0.2",
     "next": "16.0.1",
