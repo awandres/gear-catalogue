@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { isAdminRequest } from '@/lib/admin';
 
 // Fetch description using Claude API
@@ -51,7 +51,7 @@ Focus on what makes this gear unique, its sound characteristics, and typical use
 }
 
 export async function POST(
-  request: Request,
+  request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   if (!(await isAdminRequest(request))) {
