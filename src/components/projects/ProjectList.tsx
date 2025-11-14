@@ -61,11 +61,12 @@ export function ProjectList({ projects, onEdit, onDelete }: ProjectListProps) {
             onClick={() => handleProjectClick(project.id)}
           >
           <div className="p-6">
-            <div className="flex items-start justify-between mb-4">
+            {/* Header - Vertical on mobile, horizontal on md+ */}
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 md:gap-0 mb-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <div 
-                    className="w-3 h-3 rounded-full"
+                    className="w-3 h-3 rounded-full shrink-0"
                     style={{ backgroundColor: project.primaryColor }}
                   />
                   <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
@@ -73,7 +74,7 @@ export function ProjectList({ projects, onEdit, onDelete }: ProjectListProps) {
                 <p className="text-sm text-gray-600 mt-1 ml-5">{project.clientName}</p>
               </div>
               <Badge 
-                className="px-3 py-1"
+                className="px-3 py-1 w-fit md:shrink-0"
                 style={{
                   backgroundColor: statusStyles[project.status]?.bgColor || '#f3f4f6',
                   color: statusStyles[project.status]?.textColor || '#1f2937'
@@ -89,7 +90,8 @@ export function ProjectList({ projects, onEdit, onDelete }: ProjectListProps) {
               <p className="text-sm text-gray-700 mb-4 line-clamp-2">{project.description}</p>
             )}
 
-            <div className="flex items-center justify-between text-sm">
+            {/* Footer - More spacious on mobile */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 text-sm">
               <div className="text-gray-500">
                 {project.startDate && (
                   <span>
@@ -112,7 +114,7 @@ export function ProjectList({ projects, onEdit, onDelete }: ProjectListProps) {
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 {project.gearLoadout && (
                   <span className="text-gray-600">
                     {project.gearLoadout.length} items

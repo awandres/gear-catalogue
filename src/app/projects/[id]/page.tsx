@@ -350,20 +350,23 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Project Header */}
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6 border-l-8" style={{ borderLeftColor: project.primaryColor }}>
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex items-start gap-3">
+        {/* Mobile: Stack vertically, Desktop: Side by side */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
+          <div className="flex items-start gap-3 flex-1">
             <div 
               className="w-4 h-4 rounded-full mt-1 shrink-0"
               style={{ backgroundColor: project.primaryColor }}
             />
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{project.name}</h1>
               <p className="text-lg text-gray-600">{project.clientName}</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          
+          {/* Status and share - Stack on mobile */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 md:shrink-0">
             <Badge 
-              className="text-sm px-3 py-1"
+              className="text-sm px-3 py-1 w-fit"
               style={{
                 backgroundColor: statusStyles[project.status]?.bgColor || '#f3f4f6',
                 color: statusStyles[project.status]?.textColor || '#1f2937'
@@ -373,12 +376,12 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             </Badge>
             <button
               onClick={copyShareLink}
-              className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors flex items-center gap-2"
+              className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m9.632 4.658C18.114 15.062 18 14.606 18 14.124c0-.482.114-.938.316-1.342M9.316 10.658a3 3 0 105.368 2.684m0 0a3 3 0 10-5.368-2.684" />
               </svg>
-              Share with Client
+              <span className="whitespace-nowrap">Share with Client</span>
             </button>
           </div>
         </div>

@@ -205,18 +205,23 @@ export function StickyProjectBar({
                   backgroundColor: `${project.primaryColor}15` // 15 = ~8% opacity
                 }}
               >
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold" style={{ color: project.primaryColor }}>
+                    {project.name} Loadout ({project.gearLoadout?.length || 0} items)
+                  </h4>
                   {onClearLoadout && project.gearLoadout && project.gearLoadout.length > 0 && (
                     <button
                       onClick={() => onClearLoadout(project.id)}
-                      className="bg-red-600 hover:bg-red-700 text-white py-4 px-3 rounded text-sm transition-colors flex flex-col items-center justify-center gap-1.5 font-medium row-span-2"
+                      className="text-xs px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded transition-colors flex items-center gap-1"
                     >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                       Clear All
                     </button>
                   )}
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
                   {project.gearLoadout.filter(item => item.gear).map(({ gear }) => {
                     if (!gear) return null;
                     return (

@@ -39,20 +39,26 @@ export function Navigation() {
     <>
       {/* Desktop Navigation */}
       <nav className="hidden md:flex gap-6">
-        {navLinks.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={`transition-colors font-medium flex items-center gap-1 ${
-              isActive(link.href)
-                ? 'text-blue-600 hover:text-blue-700'
-                : 'text-gray-600 hover:text-gray-900'
-            } ${link.href === '/kenny' ? 'text-amber-600 hover:text-amber-700 font-mono' : ''}`}
-          >
-            {link.icon}
-            {link.label}
-          </Link>
-        ))}
+        {navLinks.map((link) => {
+          // Kenny Kloud always gets yellow/amber, regardless of active state
+          const isKenny = link.href === '/kenny';
+          const linkClasses = isKenny
+            ? 'text-amber-600 hover:text-amber-700 font-mono'
+            : isActive(link.href)
+              ? 'text-blue-600 hover:text-blue-700'
+              : 'text-gray-600 hover:text-gray-900';
+          
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`transition-colors font-medium flex items-center gap-1 ${linkClasses}`}
+            >
+              {link.icon}
+              {link.label}
+            </Link>
+          );
+        })}
       </nav>
 
       {/* Mobile Navigation */}
@@ -81,21 +87,27 @@ export function Navigation() {
           <div className="absolute top-16 right-0 left-0 bg-white shadow-lg border-t border-gray-200 z-50">
             <div className="container mx-auto px-4 py-4">
               <nav className="flex flex-col gap-3">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`px-4 py-3 rounded-lg transition-colors font-medium flex items-center gap-2 ${
-                      isActive(link.href)
-                        ? 'bg-blue-50 text-blue-600'
-                        : 'text-gray-700 hover:bg-gray-50'
-                    } ${link.href === '/kenny' ? 'bg-amber-50 text-amber-600 hover:bg-amber-100 font-mono' : ''}`}
-                  >
-                    {link.icon}
-                    {link.label}
-                  </Link>
-                ))}
+                {navLinks.map((link) => {
+                  // Kenny Kloud always gets yellow/amber, regardless of active state
+                  const isKenny = link.href === '/kenny';
+                  const linkClasses = isKenny
+                    ? 'bg-amber-50 text-amber-600 hover:bg-amber-100 font-mono'
+                    : isActive(link.href)
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-700 hover:bg-gray-50';
+                  
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`px-4 py-3 rounded-lg transition-colors font-medium flex items-center gap-2 ${linkClasses}`}
+                    >
+                      {link.icon}
+                      {link.label}
+                    </Link>
+                  );
+                })}
               </nav>
             </div>
           </div>

@@ -31,7 +31,7 @@ export function AdminToggle() {
     return (
       <button
         onClick={disableAdminMode}
-        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+        className="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-xs font-medium"
       >
         Exit Admin Mode
       </button>
@@ -42,7 +42,7 @@ export function AdminToggle() {
     <>
       <button
         onClick={() => setShowModal(true)}
-        className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+        className="px-3 py-1.5 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors text-xs font-medium"
       >
         Admin Access
       </button>

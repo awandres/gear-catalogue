@@ -182,6 +182,16 @@ export function AdminToolbar() {
                 </button>
 
                 <button
+                  onClick={() => window.location.href = '/gear?seed=true'}
+                  className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  Seed Database
+                </button>
+
+                <button
                   onClick={handleClearSession}
                   className="w-full px-4 py-3 bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2"
                 >
@@ -290,6 +300,16 @@ export function AdminToolbar() {
           </button>
 
           <button
+            onClick={() => window.location.href = '/gear?seed=true'}
+            className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            Seed Database
+          </button>
+
+          <button
             onClick={handleClearSession}
             className="w-full px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2"
           >
@@ -352,6 +372,25 @@ export function AdminToolbar() {
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+          </button>
+          <button
+            onClick={handleProcessImages}
+            disabled={processingImages}
+            className="p-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:bg-indigo-400 disabled:cursor-not-allowed"
+            title="Fetch Images"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </button>
+          <button
+            onClick={() => window.location.href = '/gear?seed=true'}
+            className="p-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+            title="Seed Database"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
           </button>
           <button

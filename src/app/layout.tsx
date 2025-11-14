@@ -80,9 +80,16 @@ export default function RootLayout({
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                 <div className="flex items-center gap-8">
                   <Link href="/" className="text-xl font-bold">Gear Catalogue</Link>
-                  <Navigation />
+                  <div className="hidden md:block">
+                    <Navigation />
+                  </div>
                 </div>
-                <AdminToggle />
+                <div className="flex items-center gap-3">
+                  <AdminToggle />
+                  <div className="md:hidden">
+                    <Navigation />
+                  </div>
+                </div>
               </div>
             </header>
             
