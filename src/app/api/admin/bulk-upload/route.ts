@@ -171,8 +171,57 @@ function getRandomElement<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+// Fetch description using Claude API
+async function fetchDescriptionWithClaude(brand: string, name: string, category: string): Promise<string> {
+  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+  
+  if (!ANTHROPIC_API_KEY) {
+    return `Professional ${category} by ${brand}`;
+  }
+
+  try {
+    const prompt = `Write a concise 1-2 sentence description for this studio equipment:
+
+Brand: ${brand}
+Model: ${name}
+Category: ${category}
+
+Focus on what makes this gear unique, its sound characteristics, and typical use cases. Write as if for a professional studio catalog. Be factual and informative, not marketing hype.`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 150,
+        messages: [{
+          role: 'user',
+          content: prompt
+        }]
+      }),
+    });
+
+    if (!response.ok) {
+      console.warn('Claude API failed:', response.status);
+      return `Professional ${category} by ${brand}`;
+    }
+
+    const data = await response.json();
+    const description = data.content?.[0]?.text?.trim();
+    
+    return description || `Professional ${category} by ${brand}`;
+  } catch (error) {
+    console.error('Error fetching description from Claude:', error);
+    return `Professional ${category} by ${brand}`;
+  }
+}
+
 // Parse a single line of gear data with current category context
-function parseGearLine(line: string, currentCategory: string | null): any | null {
+async function parseGearLine(line: string, currentCategory: string | null, fetchDescription: boolean = true): Promise<any | null> {
   const trimmed = line.trim();
   if (!trimmed) return null;
 
@@ -193,7 +242,17 @@ function parseGearLine(line: string, currentCategory: string | null): any | null
     const brandNamePart = parts[0];
     const { brand, name } = parseBrandAndName(brandNamePart);
     const category = parts[1]?.toLowerCase().trim() || currentCategory || 'effects';
-    const description = parts[2]?.trim() || `Professional ${category} by ${brand}`;
+    
+    // Fetch description from Google if not provided in pipe format
+    let description: string;
+    const providedDescription = parts[2]?.trim();
+    if (providedDescription) {
+      description = providedDescription;
+    } else if (fetchDescription && category !== 'needs-review') {
+      description = await fetchDescriptionWithClaude(brand, name, category);
+    } else {
+      description = `Professional ${category} by ${brand}`;
+    }
     
     const subcategory = detectSubcategory(name, description, category);
     const id = `${sanitizeForId(brand)}-${sanitizeForId(name)}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -205,6 +264,7 @@ function parseGearLine(line: string, currentCategory: string | null): any | null
       category,
       subcategory,
       description,
+      fetchedDescription: !providedDescription && fetchDescription && category !== 'needs-review',
       soundCharacteristics: {
         tone: tags.length > 0 ? tags.slice(0, 2) : getRandomElement(SAMPLE_TONES),
         qualities: getRandomElement(SAMPLE_QUALITIES)
@@ -217,9 +277,17 @@ function parseGearLine(line: string, currentCategory: string | null): any | null
   // Simple format: just a gear name/description
   const { brand, name } = parseBrandAndName(withoutTags);
   const category = currentCategory || 'needs-review';
-  const description = category === 'needs-review' 
-    ? `${brand} ${name} - requires categorization and details`
-    : `Professional studio ${category} equipment`;
+  
+  // Fetch description from Claude if not needs-review and fetchDescription is enabled
+  let description: string;
+  if (category === 'needs-review') {
+    description = `${brand} ${name} - requires categorization and details`;
+  } else if (fetchDescription) {
+    description = await fetchDescriptionWithClaude(brand, name, category);
+  } else {
+    description = `Professional studio ${category} equipment`;
+  }
+  
   const subcategory = category === 'needs-review' ? 'uncategorized' : detectSubcategory(name, description, category);
   const id = `${sanitizeForId(brand)}-${sanitizeForId(name)}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -230,6 +298,7 @@ function parseGearLine(line: string, currentCategory: string | null): any | null
     category,
     subcategory,
     description,
+    fetchedDescription: fetchDescription && category !== 'needs-review',
     soundCharacteristics: {
       tone: tags.length > 0 ? tags.slice(0, 2) : getRandomElement(SAMPLE_TONES),
       qualities: getRandomElement(SAMPLE_QUALITIES)
@@ -262,9 +331,12 @@ export async function POST(request: NextRequest) {
       errors: [] as string[],
       items: [] as any[],
       needsReview: [] as any[],
+      descriptionsFetched: 0,
+      generatedDescriptions: [] as Array<{name: string, brand: string, description: string}>,
     };
 
     let currentCategory: string | null = null;
+    let descriptionsRequested = 0;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -287,9 +359,23 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        const gearData = parseGearLine(line, currentCategory);
+        const gearData = await parseGearLine(line, currentCategory, true);
         
         if (!gearData) continue;
+        
+        // Track and delay Google API calls for descriptions
+        if (gearData.fetchedDescription) {
+          if (descriptionsRequested > 0) {
+            await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay to avoid rate limiting
+          }
+          descriptionsRequested++;
+          results.descriptionsFetched++;
+          results.generatedDescriptions.push({
+            name: gearData.name,
+            brand: gearData.brand,
+            description: gearData.description
+          });
+        }
 
         // Create gear in database
         const newGear = await prisma.gear.create({
@@ -308,12 +394,19 @@ export async function POST(request: NextRequest) {
         });
 
         results.created++;
+        
+        // Check if item has an image
+        const hasImage = await prisma.gearImage.count({
+          where: { gearId: newGear.id }
+        }) > 0;
+        
         results.items.push({
           id: newGear.id,
           name: newGear.name,
           brand: newGear.brand,
           category: newGear.category,
           tags: newGear.tags,
+          hasImage,
         });
         
         // Track items that need review
@@ -352,6 +445,8 @@ export async function POST(request: NextRequest) {
       errors: results.errors,
       items: results.items,
       needsReview: results.needsReview,
+      descriptionsFetched: results.descriptionsFetched,
+      generatedDescriptions: results.generatedDescriptions,
     });
   } catch (error) {
     console.error("Error processing bulk upload:", error);

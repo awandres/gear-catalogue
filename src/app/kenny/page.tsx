@@ -19,6 +19,8 @@ export default function KennyPage() {
   const [apiUsage, setApiUsage] = useState<any>(null);
   const [loadingUsage, setLoadingUsage] = useState(true);
   const [gearCount, setGearCount] = useState<number>(0);
+  const [showDescriptions, setShowDescriptions] = useState(5);
+  const [smartMode, setSmartMode] = useState(false);
 
   useEffect(() => {
     if (isAdmin) {
@@ -103,6 +105,7 @@ export default function KennyPage() {
       const data = await response.json();
       setResults(data);
       setTextInput(''); // Clear input on success
+      setShowDescriptions(5); // Reset description pagination
       
       // Refresh API usage stats and gear count
       fetchApiUsage();
@@ -299,38 +302,32 @@ export default function KennyPage() {
             <CardContent className="p-6">
               <h2 className="text-xl font-bold mb-4 font-mono">Paste Gear List</h2>
               
-              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm">
-                <p className="font-semibold text-blue-900 mb-2">Super Simple Format:</p>
-                <ul className="space-y-1 text-blue-800">
-                  <li>• Category headers end with <code className="bg-blue-100 px-1 rounded">:</code> (e.g., <code className="bg-blue-100 px-1 rounded">Mics:</code>)</li>
-                  <li>• Each line after = one gear item</li>
-                  <li>• Just type gear names: <code className="bg-blue-100 px-1 rounded">Neumann U87</code></li>
-                  <li>• Or: <code className="bg-blue-100 px-1 rounded">Brand - Name</code></li>
-                  <li>• System auto-fills description, tags, etc.</li>
-                  <li>• Optional tags: <code className="bg-blue-100 px-1 rounded">#vintage #tube</code></li>
+              {/* Instructions - Above textarea */}
+              <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs">
+                <p className="font-semibold text-blue-900 mb-1.5">Format:</p>
+                <ul className="space-y-0.5 text-blue-800">
+                  <li>• Category headers end with <code className="bg-blue-100 px-1 rounded">:</code></li>
+                  <li>• One item per line</li>
+                  <li>• Optional tags: <code className="bg-blue-100 px-1 rounded">#vintage</code></li>
+                  <li>• AI generates descriptions automatically</li>
                 </ul>
               </div>
-
+              
               <textarea
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
-                placeholder="Paste your gear list here...
+                placeholder={`Effects:
 
-Example:
+Fulltone OCD
+Boss DS-1
 
-Mics:
-Neumann U87 #condenser #vintage
-Shure SM57
-AKG C414
 
-Guitars:
-Fender Stratocaster
-Gibson Les Paul #humbucker #vintage
+Microphone:
 
-Keyboards:
-Moog Minimoog
-Rhodes Mark I"
-                className="w-full h-96 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+Shure SM7B
+Neumann U87`}
+                className="w-full h-96 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm whitespace-pre-wrap"
+                style={{ whiteSpace: 'pre-wrap' }}
               />
 
               {/* Image API Calls Selector */}
@@ -471,21 +468,79 @@ Rhodes Mark I"
             <CardContent className="p-6">
               <h2 className="text-xl font-bold mb-4 font-mono">Results</h2>
               
-              {error && (
+              {processing && (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <svg className="animate-spin h-12 w-12 text-blue-600 mb-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <p className="text-gray-600 font-medium">Processing gear list...</p>
+                  <p className="text-sm text-gray-500 mt-1">Generating AI descriptions</p>
+                </div>
+              )}
+              
+              {error && !processing && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
                   <p className="font-semibold">Error:</p>
                   <p className="text-sm mt-1">{error}</p>
                 </div>
               )}
 
-              {results && (
+              {!processing && !results && !error && (
+                <div className="text-center py-12 text-gray-500">
+                  <p className="text-sm">Results will appear here after processing</p>
+                </div>
+              )}
+
+              {results && !processing && (
                 <div className="space-y-4">
                   <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
                     <p className="font-semibold">✓ Upload Complete!</p>
                     <p className="text-sm mt-1">
                       Successfully created {results.created} gear item{results.created !== 1 ? 's' : ''}
+                      {results.descriptionsFetched > 0 && (
+                        <span className="ml-2 text-blue-700">
+                          ({results.descriptionsFetched} description{results.descriptionsFetched !== 1 ? 's' : ''} AI-generated)
+                        </span>
+                      )}
                     </p>
                   </div>
+
+                  {results.generatedDescriptions && results.generatedDescriptions.length > 0 && (
+                    <div className="bg-blue-50 border border-blue-200 text-blue-900 px-4 py-3 rounded-lg">
+                      <p className="font-semibold mb-2">
+                        🤖 AI-Generated Descriptions ({results.generatedDescriptions.length})
+                      </p>
+                      <div className="space-y-2 text-sm">
+                        {results.generatedDescriptions.slice(0, showDescriptions).map((item: any, idx: number) => (
+                          <div key={idx} className="bg-white bg-opacity-50 p-2 rounded">
+                            <p className="font-medium text-blue-800">
+                              {item.brand} {item.name}
+                            </p>
+                            <p className="text-gray-700 text-xs mt-1 line-clamp-2">
+                              {item.description}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                      {results.generatedDescriptions.length > showDescriptions && (
+                        <button
+                          onClick={() => setShowDescriptions(prev => prev + 5)}
+                          className="mt-3 text-xs text-blue-700 hover:text-blue-900 hover:underline"
+                        >
+                          Show 5 more ({results.generatedDescriptions.length - showDescriptions} remaining)
+                        </button>
+                      )}
+                      {showDescriptions > 5 && (
+                        <button
+                          onClick={() => setShowDescriptions(5)}
+                          className="mt-3 ml-3 text-xs text-blue-700 hover:text-blue-900 hover:underline"
+                        >
+                          Show less
+                        </button>
+                      )}
+                    </div>
+                  )}
 
                   {results.needsReview && results.needsReview.length > 0 && (
                     <div className="bg-orange-50 border border-orange-200 text-orange-800 px-4 py-3 rounded-lg">
@@ -528,9 +583,20 @@ Rhodes Mark I"
                       <div className="space-y-2 max-h-96 overflow-y-auto">
                         {results.items.map((item: any, idx: number) => (
                           <div key={idx} className="bg-white border border-gray-200 p-3 rounded-lg">
-                            <div className="flex items-start justify-between">
+                            <div className="flex items-start justify-between gap-3">
                               <div className="flex-1">
-                                <p className="font-medium text-gray-900">{item.name}</p>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium text-gray-900">{item.name}</p>
+                                  {item.hasImage ? (
+                                    <svg className="w-4 h-4 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" title="Has image">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                  ) : (
+                                    <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" title="No image">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  )}
+                                </div>
                                 <p className="text-sm text-gray-600">{item.brand}</p>
                                 <Badge variant="secondary" className="text-xs mt-1">
                                   {item.category}
@@ -538,7 +604,7 @@ Rhodes Mark I"
                               </div>
                               <Link
                                 href={`/gear/${item.id}`}
-                                className="text-blue-600 hover:text-blue-700 text-sm"
+                                className="text-blue-600 hover:text-blue-700 text-sm whitespace-nowrap shrink-0"
                               >
                                 View →
                               </Link>

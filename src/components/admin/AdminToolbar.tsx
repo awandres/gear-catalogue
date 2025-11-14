@@ -14,25 +14,26 @@ export function AdminToolbar() {
 
   useEffect(() => {
     if (isAdmin) {
-      // Check if user has seen the intro this session
-      const seenIntro = sessionStorage.getItem('admin_toolbar_intro_seen');
+      // Always start collapsed
+      setIsCollapsed(true);
       
-      if (!seenIntro) {
-        // After 2 seconds, shake and collapse
+      // On desktop only, check if user has seen the intro
+      const seenIntro = sessionStorage.getItem('admin_toolbar_intro_seen');
+      const isMobile = window.innerWidth < 768; // md breakpoint
+      
+      if (!seenIntro && !isMobile) {
+        // Desktop: After 2 seconds, shake to show it's there
         const timer = setTimeout(() => {
           setIsShaking(true);
           
-          // After shake animation (0.6s), collapse
+          // After shake animation (0.6s), stop shaking
           setTimeout(() => {
-            setIsCollapsed(true);
             setIsShaking(false);
             sessionStorage.setItem('admin_toolbar_intro_seen', 'true');
           }, 600);
         }, 2000);
         
         return () => clearTimeout(timer);
-      } else {
-        setIsCollapsed(true);
       }
     }
   }, [isAdmin]);
