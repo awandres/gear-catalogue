@@ -82,12 +82,12 @@ export default function RootLayout({
                   <Link href="/" className="text-xl font-bold">Gear Catalogue</Link>
                   <Navigation />
                 </div>
-                <div className="flex items-center gap-3">
-                  <VersionBadge />
-                  <AdminToggle />
-                </div>
+                <AdminToggle />
               </div>
             </header>
+            
+            {/* Version badge - floating bottom right */}
+            <VersionBadge />
             
             <main className="pt-16">
               {children}
