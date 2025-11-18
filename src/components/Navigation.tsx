@@ -12,7 +12,7 @@ interface NavLink {
 }
 
 export function Navigation() {
-  const { isAdmin } = useAdmin();
+  const { isAdmin, accessLevel } = useAdmin();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -23,13 +23,27 @@ export function Navigation() {
     { href: '/projects', label: 'Projects', icon: null },
   ];
 
-  if (isAdmin) {
+  // Only show Kenny Kloud for full admin access
+  if (isAdmin && accessLevel === 'full') {
     navLinks.push({
       href: '/kenny',
       label: 'Kenny Kloud',
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        </svg>
+      ),
+    });
+  }
+
+  // Show Vetted Roadmap for both full and vetted access
+  if (isAdmin && (accessLevel === 'full' || accessLevel === 'vetted')) {
+    navLinks.push({
+      href: '/roadmap',
+      label: 'Vetted Roadmap',
+      icon: (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
         </svg>
       ),
     });
@@ -42,11 +56,14 @@ export function Navigation() {
         {navLinks.map((link) => {
           // Kenny Kloud always gets yellow/amber, regardless of active state
           const isKenny = link.href === '/kenny';
+          const isVettedRoadmap = link.href === '/roadmap';
           const linkClasses = isKenny
             ? 'text-amber-600 hover:text-amber-700 font-mono'
-            : isActive(link.href)
-              ? 'text-blue-600 hover:text-blue-700'
-              : 'text-gray-600 hover:text-gray-900';
+            : isVettedRoadmap
+              ? (isActive(link.href) ? 'text-purple-600 hover:text-purple-700 font-semibold' : 'text-purple-500 hover:text-purple-600 font-semibold')
+              : isActive(link.href)
+                ? 'text-blue-600 hover:text-blue-700'
+                : 'text-gray-600 hover:text-gray-900';
           
           return (
             <Link
@@ -90,11 +107,14 @@ export function Navigation() {
                 {navLinks.map((link) => {
                   // Kenny Kloud always gets yellow/amber, regardless of active state
                   const isKenny = link.href === '/kenny';
+                  const isVettedRoadmap = link.href === '/roadmap';
                   const linkClasses = isKenny
                     ? 'bg-amber-50 text-amber-600 hover:bg-amber-100 font-mono'
-                    : isActive(link.href)
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-700 hover:bg-gray-50';
+                    : isVettedRoadmap
+                      ? 'bg-purple-50 text-purple-600 hover:bg-purple-100 font-semibold'
+                      : isActive(link.href)
+                        ? 'bg-blue-50 text-blue-600'
+                        : 'text-gray-700 hover:bg-gray-50';
                   
                   return (
                     <Link

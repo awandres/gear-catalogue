@@ -1,11 +1,48 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
+import { useAdmin } from '@/contexts/AdminContext';
+import { useRouter } from 'next/navigation';
 
 export default function RoadmapPage() {
+  const { isAdmin, accessLevel } = useAdmin();
+  const router = useRouter();
   const [selectedFeature, setSelectedFeature] = useState<number | null>(null);
   const [monthlyRevenue, setMonthlyRevenue] = useState<number>(15000);
   const [numSessions, setNumSessions] = useState<number>(200);
+
+  // Check if user has access (either full or vetted)
+  const hasAccess = isAdmin && (accessLevel === 'full' || accessLevel === 'vetted');
+
+  // Redirect if no access
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-12 max-w-md w-full text-center">
+          <div className="mb-6 flex justify-center">
+            <Image 
+              src="/VT-Logo-White.png" 
+              alt="Vetted Trainers Logo" 
+              width={80}
+              height={80}
+              className="h-20 w-auto bg-black p-3 rounded-xl"
+            />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-800 mb-4">Access Restricted</h1>
+          <p className="text-gray-600 mb-6" style={{ fontSize: '18px' }}>
+            This page requires a Vetted Trainers access key. Please use the Admin Toggle in the navigation to enter your key.
+          </p>
+          <button 
+            onClick={() => router.push('/')}
+            className="bg-black text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors w-full"
+          >
+            Return to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const handlePreviousFeature = () => {
     if (selectedFeature === null) return;
@@ -458,13 +495,15 @@ export default function RoadmapPage() {
       <div className="bg-black text-white py-16">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center">
-            <div className="flex justify-center items-center gap-4 mb-4">
-              <svg className="w-24 h-24" viewBox="0 0 280 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M140 10L250 40C250 40 260 45 260 70V130C260 165 245 185 140 210C35 185 20 165 20 130V70C20 45 30 40 30 40L140 10Z" fill="white"/>
-                <path d="M140 25L235 50C235 50 242 54 242 74V130C242 160 229 176 140 198C51 176 38 160 38 130V74C38 54 45 50 45 50L140 25Z" fill="black"/>
-                <path d="M132 60L112 160H140L150 110L160 160H188L168 60H132Z" fill="white"/>
-                <path d="M190 60V160H218V110H230V90H218V80H235V60H190Z" fill="white"/>
-              </svg>
+            <div className="flex flex-col items-center gap-6 mb-4">
+              <Image 
+                src="/VT-Logo-White.png" 
+                alt="Vetted Trainers Logo" 
+                width={300}
+                height={128}
+                className="h-32 w-auto"
+                priority
+              />
               <h1 className="text-5xl font-bold">Vetted Trainers</h1>
             </div>
             <p className="text-xl text-gray-300 mb-2">
@@ -484,7 +523,7 @@ export default function RoadmapPage() {
           <p className="text-lg text-gray-600 leading-relaxed" style={{ fontSize: '18px' }}>
             Vetted Trainers is a comprehensive platform designed to replace Vergaro and streamline 
             your entire training business. From migrating your existing Google Sheets database to 
-            managing memberships, trainer schedules, payroll, and automated email marketing - we're 
+            managing memberships, trainer schedules, payroll, and automated email marketing - we&apos;re 
             building a fully customizable solution tailored to your business needs. Say goodbye to 
             juggling multiple platforms and hello to one integrated system.
           </p>
@@ -667,8 +706,7 @@ export default function RoadmapPage() {
               <div 
                 key={feature.id}
                 onClick={() => setSelectedFeature(feature.id)}
-                className={`bg-white rounded-xl shadow-md hover:shadow-xl transition-all p-6 border-t-4 ${feature.color} cursor-pointer transform hover:-translate-y-1 ${selectedFeature === feature.id ? 'ring-4 ring-opacity-50' : ''}`}
-                style={selectedFeature === feature.id ? { ringColor: feature.color.replace('border-', '') } : {}}
+                className={`bg-white rounded-xl shadow-md hover:shadow-xl transition-all p-6 border-t-4 ${feature.color} cursor-pointer transform hover:-translate-y-1 ${selectedFeature === feature.id ? 'ring-4 ring-blue-200' : ''}`}
               >
                 <div className="text-4xl mb-3">{feature.icon}</div>
                 <h3 className="text-xl font-bold text-gray-800 mb-3">{feature.title}</h3>
@@ -950,7 +988,7 @@ export default function RoadmapPage() {
               Post-MVP: Months 3-6
             </h3>
             <p className="text-gray-600 mb-6" style={{ fontSize: '18px' }}>
-              Once the MVP is live and replacing Vergaro, we'll iterate weekly based on user feedback:
+              Once the MVP is live and replacing Vergaro, we&apos;ll iterate weekly based on user feedback:
             </p>
             <div className="grid md:grid-cols-3 gap-4">
               <div className="bg-white rounded-lg p-4">
@@ -1080,7 +1118,7 @@ export default function RoadmapPage() {
             <div className="p-4 bg-purple-100 rounded-lg border border-purple-300">
               <p className="text-purple-800" style={{ fontSize: '16px' }}>
                 <strong>📊 Current Assumptions:</strong> Based on ${monthlyRevenue.toLocaleString()}/month revenue and {numSessions} sessions, 
-                you're processing an average of ${(monthlyRevenue / numSessions).toFixed(2)} per transaction. 
+                you&apos;re processing an average of ${(monthlyRevenue / numSessions).toFixed(2)} per transaction. 
                 Stripe charges 2.9% + $0.30 per transaction = ${((monthlyRevenue / numSessions) * 0.029 + 0.30).toFixed(2)} per session.
               </p>
             </div>
@@ -1203,7 +1241,7 @@ export default function RoadmapPage() {
             <div className="mt-6">
               <div className="p-4 bg-blue-100 rounded-lg border border-blue-300">
                 <p className="text-blue-800" style={{ fontSize: '16px' }}>
-                  <strong>💡 Note:</strong> These calculations assume Vergaro charges 3.5% transaction fees vs. Stripe's 2.9% + $0.30. 
+                  <strong>💡 Note:</strong> These calculations assume Vergaro charges 3.5% transaction fees vs. Stripe&apos;s 2.9% + $0.30. 
                   Actual savings may be higher when factoring in time saved from automation and reduced manual processes.
                 </p>
               </div>
@@ -1215,7 +1253,7 @@ export default function RoadmapPage() {
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-lg p-10 text-white text-center mt-12">
           <h2 className="text-3xl font-bold mb-4">Ready to Migrate from Vergaro?</h2>
           <p className="text-blue-100 mb-6" style={{ fontSize: '18px' }}>
-            Let's discuss your specific business needs and create a customized migration plan that preserves your client relationships
+            Let&apos;s discuss your specific business needs and create a customized migration plan that preserves your client relationships
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold text-lg hover:bg-blue-50 transition-colors duration-200">
@@ -1266,12 +1304,13 @@ export default function RoadmapPage() {
                   {/* Top Bar */}
                   <div className="bg-black text-white px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <svg className="w-8 h-8" viewBox="0 0 280 220" fill="none">
-                        <path d="M140 10L250 40C250 40 260 45 260 70V130C260 165 245 185 140 210C35 185 20 165 20 130V70C20 45 30 40 30 40L140 10Z" fill="white"/>
-                        <path d="M140 25L235 50C235 50 242 54 242 74V130C242 160 229 176 140 198C51 176 38 160 38 130V74C38 54 45 50 45 50L140 25Z" fill="black"/>
-                        <path d="M132 60L112 160H140L150 110L160 160H188L168 60H132Z" fill="white"/>
-                        <path d="M190 60V160H218V110H230V90H218V80H235V60H190Z" fill="white"/>
-                      </svg>
+                      <Image 
+                        src="/VT-Logo-White.png" 
+                        alt="VT Logo" 
+                        width={32}
+                        height={32}
+                        className="w-8 h-8"
+                      />
                       <span className="font-bold text-lg">VT</span>
                     </div>
                     <div className="flex items-center gap-3">
@@ -1394,12 +1433,13 @@ export default function RoadmapPage() {
               {/* Admin Header */}
               <div className="bg-black text-white px-8 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <svg className="w-10 h-10" viewBox="0 0 280 220" fill="none">
-                    <path d="M140 10L250 40C250 40 260 45 260 70V130C260 165 245 185 140 210C35 185 20 165 20 130V70C20 45 30 40 30 40L140 10Z" fill="white"/>
-                    <path d="M140 25L235 50C235 50 242 54 242 74V130C242 160 229 176 140 198C51 176 38 160 38 130V74C38 54 45 50 45 50L140 25Z" fill="black"/>
-                    <path d="M132 60L112 160H140L150 110L160 160H188L168 60H132Z" fill="white"/>
-                    <path d="M190 60V160H218V110H230V90H218V80H235V60H190Z" fill="white"/>
-                  </svg>
+                  <Image 
+                    src="/VT-Logo-White.png" 
+                    alt="VT Logo" 
+                    width={40}
+                    height={40}
+                    className="w-10 h-10"
+                  />
                   <div>
                     <div className="font-bold text-lg">Vetted Trainers</div>
                     <div className="text-sm text-gray-300">Admin Dashboard</div>
@@ -1466,7 +1506,7 @@ export default function RoadmapPage() {
                   {/* Stats Grid */}
                   <div className="grid grid-cols-4 gap-4 mb-8">
                     <div className="bg-white rounded-xl p-6 border-2 border-black shadow-md">
-                      <div className="text-sm text-gray-600 mb-1">Today's Sessions</div>
+                      <div className="text-sm text-gray-600 mb-1">Today&apos;s Sessions</div>
                       <div className="text-4xl font-bold text-black">24</div>
                       <div className="text-sm text-green-600 mt-2">↑ 12% vs yesterday</div>
                     </div>
@@ -1489,7 +1529,7 @@ export default function RoadmapPage() {
 
                   {/* Recent Activity */}
                   <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                    <h3 className="font-bold text-xl mb-4">Today's Schedule</h3>
+                    <h3 className="font-bold text-xl mb-4">Today&apos;s Schedule</h3>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between p-4 bg-black text-white rounded-lg">
                         <div className="flex items-center gap-4">

@@ -6,7 +6,7 @@ import { ClearDatabaseModal, ClearOptions } from './ClearDatabaseModal';
 import toast from 'react-hot-toast';
 
 export function AdminToolbar() {
-  const { isAdmin } = useAdmin();
+  const { isAdmin, accessLevel } = useAdmin();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
@@ -113,7 +113,8 @@ export function AdminToolbar() {
     }
   };
 
-  if (!isAdmin) return null;
+  // Only show toolbar for full admin access, not for vetted access
+  if (!isAdmin || accessLevel === 'vetted') return null;
 
   return (
     <>

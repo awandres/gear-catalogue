@@ -5,6 +5,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 interface AdminContextType {
   isAdmin: boolean;
   adminKey: string | null;
+  accessLevel: 'none' | 'full' | 'vetted';
   enableAdminMode: (key: string) => Promise<boolean>;
   disableAdminMode: () => void;
   activeProjectId: string | null;
@@ -16,12 +17,15 @@ const AdminContext = createContext<AdminContextType | undefined>(undefined);
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminKey, setAdminKey] = useState<string | null>(null);
+  const [accessLevel, setAccessLevel] = useState<'none' | 'full' | 'vetted'>('none');
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
 
   // Check localStorage on mount for persisted admin state and active project (dev only)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedKey = localStorage.getItem('gear_catalog_admin_key');
+      const storedLevel = localStorage.getItem('gear_catalog_access_level') as 'full' | 'vetted' | null;
+      
       if (storedKey) {
         validateAdminKey(storedKey);
       }
@@ -55,12 +59,14 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ key }),
       });
 
-      const { valid } = await response.json();
+      const { valid, accessLevel: level } = await response.json();
       
       if (valid) {
         setIsAdmin(true);
         setAdminKey(key);
+        setAccessLevel(level || 'full');
         localStorage.setItem('gear_catalog_admin_key', key);
+        localStorage.setItem('gear_catalog_access_level', level || 'full');
         return true;
       }
       
@@ -78,7 +84,9 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const disableAdminMode = () => {
     setIsAdmin(false);
     setAdminKey(null);
+    setAccessLevel('none');
     localStorage.removeItem('gear_catalog_admin_key');
+    localStorage.removeItem('gear_catalog_access_level');
   };
 
   return (
@@ -86,6 +94,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       value={{
         isAdmin,
         adminKey,
+        accessLevel,
         enableAdminMode,
         disableAdminMode,
         activeProjectId,
